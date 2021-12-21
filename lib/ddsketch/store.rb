@@ -66,7 +66,7 @@ module DDSketch
 
     "" "Return the number of bins." ""
     # @abstract
-    def length(self)
+    def length()
       # type: () -> int
     end
 
@@ -129,19 +129,15 @@ module DDSketch
       # type: () -> str
       repr_str = "{"
       for i, sbin in enumerate(self.bins)
-        repr_str += "%s: %s, " % (i + self.offset, sbin)
+        repr_str += "#{i + offset}: #{sbin}, "
       end
-      repr_str += "}}, min_key:%s, max_key:%s, offset:%s" % (
-        self.min_key,
-          self.max_key,
-          self.offset,
-      )
+      repr_str += "}}, min_key:#{min_key}, max_key:#{max_key}, offset:#{offset}"
       return repr_str
     end
 
     def copy(store)
       # type: (DenseStore) -> None
-      self.bins = store.bins[:]
+      self.bins = store.bins.dup
       self.count = store.count
       self.min_key = store.min_key
       self.max_key = store.max_key
@@ -149,7 +145,7 @@ module DDSketch
     end
 
     #        """Return the number of bins."""
-    def length(self)
+    def length()
       # type: () -> int
       return len(self.bins)
     end
@@ -223,10 +219,10 @@ module DDSketch
       # type: (int) -> None
 
       if shift > 0
-        self.bins = self.bins[:- shift]
-        self.bins[ : 0] = [0.0] * shift
+        self.bins = self.bins[0..-shift]
+        self.bins[0..0] = [0.0] * shift # TODO: This used to be self.bins[:0]
       else
-        self.bins = self.bins[abs(shift) :]
+        self.bins = self.bins[abs(shift)..-1]
         self.bins.extend([0.0] * abs(shift))
       end
       self.offset -= shift
@@ -300,7 +296,7 @@ module DDSketch
       # type: (CollapsingLowestDenseStore) -> None
       self.bin_limit = store.bin_limit
       self.is_collapsed = store.is_collapsed
-      super(self).copy(store)
+      super().copy(store)
     end
 
     def _get_new_length(new_min_key, new_max_key)
@@ -346,7 +342,7 @@ module DDSketch
           # put everything in the first bin
           self.offset = new_min_key
           self.min_key = new_min_key
-          self.bins[:] = [0.0] * self.length()
+          self.bins = [0.0] * self.length()
           self.bins[0] = self.count
         else
           shift = self.offset - new_min_key
@@ -435,7 +431,7 @@ module DDSketch
       # type: (CollapsingHighestDenseStore) -> None
       self.bin_limit = store.bin_limit
       self.is_collapsed = store.is_collapsed
-      super(self).copy(store)
+      super().copy(store)
     end
 
     def _get_new_length(new_min_key, new_max_key)
@@ -482,7 +478,7 @@ module DDSketch
           # put everything in the last bin
           self.offset = new_min_key
           self.max_key = new_max_key
-          self.bins[:] = [0.0] * self.length()
+          self.bins = [0.0] * self.length()
           self.bins[-1] = self.count
         else
           shift = self.offset - new_min_key

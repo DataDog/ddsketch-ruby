@@ -7,7 +7,7 @@
 
 # from abc import ABCMeta
 # from abc import abstractmethod
-# import math
+# import Math
 # import sys
 #
 # import six
@@ -52,13 +52,13 @@ module DDSketch
       @offset = offset
 
       gamma_mantissa = 2 * relative_accuracy / (1 - relative_accuracy)
-      self.gamma = 1 + gamma_mantissa
-      @multiplier = 1 / math.log1p(gamma_mantissa)
-      self.min_possible = Float::MIN * self.gamma
-      self.max_possible = Float::MAX / self.gamma
+      @gamma = 1 + gamma_mantissa
+      @multiplier = 1 / Math.log(gamma_mantissa + 1)
+      @min_possible = Float::MIN * @gamma
+      @max_possible = Float::MAX / @gamma
     end
 
-    attr_reader :relative_accuracy
+    attr_reader :relative_accuracy, :min_possible, :max_possible
 
     # Constructor used by pb.proto
     # type: (float, float) -> KeyMapping
@@ -75,8 +75,7 @@ module DDSketch
     #           int: the key specifying the bucket for value
     #       """
     def key(value)
-
-      return int(math.ceil(self._log_gamma(value)) + @offset)
+      return Integer(self.log_gamma(value).ceil + @offset)
     end
 
     # type: (int) -> float
@@ -87,8 +86,7 @@ module DDSketch
     #           float: the value represented by the bucket specified by the key
     #       """
     def value(key)
-
-      return self._pow_gamma(key - @offset) * (2.0 / (1 + self.gamma))
+      return self.pow_gamma(key - @offset) * (2.0 / (1 + @gamma))
     end
 
     protected
@@ -96,12 +94,12 @@ module DDSketch
     # type: (float) -> float
     # """Return (an approximation of) the logarithm of the value base gamma"""
     # @abstract
-    def _log_gamma(value) end
+    def log_gamma(value) end
 
     # # type: (float) -> float
     # """Return (an approximation of) gamma to the power value"""
     # @abstract
-    def _pow_gamma(value) end
+    def pow_gamma(value) end
   end
 
   # """A memory-optimal KeyMapping, i.e., given a targeted relative accuracy, it
@@ -115,22 +113,16 @@ module DDSketch
       @multiplier *= Math.log(2)
     end
 
-    def _log_gamma(value)
+    protected
+
+    def log_gamma(value)
       # type: (float) -> float
       return Math.log(value, 2) * @multiplier
     end
 
-    def _pow_gamma(value)
+    def pow_gamma(value)
       # type: (float) -> float
       return 2 ** (value / @multiplier)
-    end
-
-    def _cbrt(x)
-      # type: (float) -> float
-      y = abs(x) ** (1.0 / 3.0)
-      return -y if x < 0
-
-      return y
     end
   end
 
@@ -150,7 +142,7 @@ module DDSketch
     def _log2_approx(value)
       # type: (float) -> float
 
-      mantissa, exponent = math.frexp(value)
+      mantissa, exponent = Math.frexp(value)
       significand = 2 * mantissa - 1
       return significand + (exponent - 1)
     end
@@ -159,17 +151,19 @@ module DDSketch
     def _exp2_approx(value)
       # type: (float) -> float
 
-      exponent = int(math.floor(value) + 1)
+      exponent = Integer(value.floor + 1)
       mantissa = (value - exponent + 2) / 2.0
-      return math.ldexp(mantissa, exponent)
+      return Math.ldexp(mantissa, exponent)
     end
 
-    def _log_gamma(value)
+    protected
+
+    def log_gamma(value)
       # type: (float) -> float
       return self._log2_approx(value) * @multiplier
     end
 
-    def _pow_gamma(value)
+    def pow_gamma(value)
       # type: (float) -> float
       return self._exp2_approx(value / @multiplier)
     end
@@ -191,47 +185,50 @@ module DDSketch
     def initialize(relative_accuracy, offset = 0.0)
       # type: (float, float) -> None
       super(relative_accuracy, offset = offset)
-      @multiplier /= self.C
+      @multiplier /= C
     end
 
     def _cubic_log2_approx(value)
       # type: (float) -> float
       "" "Approximates log2 using a cubic polynomial" ""
-      mantissa, exponent = math.frexp(value)
+      mantissa, exponent = Math.frexp(value)
       significand = 2 * mantissa - 1
       return (
-        (self.A * significand + self.B) * significand + self.C
+        (A * significand + B) * significand + C
       ) * significand + (exponent - 1)
     end
 
     def _cubic_exp2_approx(value)
       # type: (float) -> float
       # Derived from Cardano's formula
-      exponent = int(math.floor(value))
-      delta_0 = self.B * self.B - 3 * self.A * self.C
+      exponent = Integer(value.floor)
+      delta_0 = B * B - 3 * A * C
       delta_1 = (
-        2.0 * self.B * self.B * self.B
-        -9.0 * self.A * self.B * self.C
-        -27.0 * self.A * self.A * (value - exponent)
+        2.0 * B * B * B
+        -9.0 * A * B * C
+        -27.0 * A * A * (value - exponent)
       )
-      cardano = _cbrt(
+      cardano = Math.cbrt(
         (delta_1 - ((delta_1 * delta_1 - 4 * delta_0 * delta_0 * delta_0) ** 0.5)) /
           2.0)
       significand_plus_one = (
-        -(self.B + cardano + delta_0 / cardano) / (3.0 * self.A) + 1.0
+        -(B + cardano + delta_0 / cardano) / (3.0 * A) + 1.0
       )
       mantissa = significand_plus_one / 2
-      return math.ldexp(mantissa, exponent + 1)
+      return Math.ldexp(mantissa, exponent + 1)
     end
 
-    def _log_gamma(value)
+    protected
+
+    def log_gamma(value)
       # type: (float) -> float
       return self._cubic_log2_approx(value) * @multiplier
 
-      def _pow_gamma(value)
-        # type: (float) -> float
-        return self._cubic_exp2_approx(value / @multiplier)
-      end
+    end
+
+    def pow_gamma(value)
+      # type: (float) -> float
+      return self._cubic_exp2_approx(value / @multiplier)
     end
   end
 end
