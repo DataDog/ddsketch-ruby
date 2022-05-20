@@ -43,6 +43,8 @@ module DDSketch
     #     _multiplier (float): used for calculating log_gamma(value) initially, _multiplier = 1 / log(gamma)
     #
     # type: (float, float) -> None
+    attr_reader :gamma
+
     def initialize(relative_accuracy, offset = 0.0)
       if relative_accuracy <= 0 or relative_accuracy >= 1
         raise IllegalArgumentException("Relative accuracy must be between 0 and 1.")
@@ -203,14 +205,10 @@ module DDSketch
       # Derived from Cardano's formula
       exponent = Integer(value.floor)
       delta_0 = B * B - 3 * A * C
-      delta_1 = (
-        2.0 * B * B * B
-        -9.0 * A * B * C
-        -27.0 * A * A * (value - exponent)
-      )
+      delta_1 = (2.0 * B * B * B) - (9.0 * A * B * C) - (27.0 * A * A * (value - exponent))
       cardano = Math.cbrt(
-        (delta_1 - ((delta_1 * delta_1 - 4 * delta_0 * delta_0 * delta_0) ** 0.5)) /
-          2.0)
+        (delta_1 - ((delta_1 * delta_1 - 4 * delta_0 * delta_0 * delta_0) ** 0.5)) / 2.0)
+
       significand_plus_one = (
         -(B + cardano + delta_0 / cardano) / (3.0 * A) + 1.0
       )

@@ -73,7 +73,6 @@ RSpec.describe DDSketch::KeyMapping do
           let(:offset) { offset }
 
           it 'test offset' do
-            puts "offset: #{offset}"
             expect(mapping.key(1)).to eq(Integer(offset))
           end
         end
@@ -91,7 +90,6 @@ RSpec.describe DDSketch::KeyMapping do
     #         rel_acc_mult = 1 - math.sqrt(2) * 1e-1
     #         min_rel_acc = 1e-8
     #         rel_acc = 1 - 1e-3
-    #
     #         while rel_acc >= min_rel_acc:
     #             mapping = self.mapping(rel_acc, offset=0.0)
     #             max_rel_acc = _test_value_rel_acc(mapping, self)

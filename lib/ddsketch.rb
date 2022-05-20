@@ -69,6 +69,8 @@ module DDSketch
 
     # type: (KeyMapping, Store, Store, float) -> nil
     # @param [Float] zero_count
+    attr_reader :mapping, :store, :negative_store, :zero_count, :min, :max, :sum
+
     def initialize(
       mapping,
       store,
@@ -87,34 +89,10 @@ module DDSketch
       @sum = 0.0
     end
 
-    def to_s
-      (
-        "store: {}, negative_store: {}, "
-        "zero_count: {}, count: {}, "
-        "sum: {}, min: {}, max: {}"
-      ).format(
-        @store,
-        @negative_store,
-        @zero_count,
-        @count,
-        @sum,
-        @min,
-        @max,
-      )
-    end
-
-    attr_reader :count
-
-    # @return [String] name of the sketch
-    attr_reader :name
-
-    # @return [Float] the exact average of the values added to the sketch.
+    attr_reader :count, :name, :sum, :zero_count
     def avg
       sum / count
     end
-
-    # @return [Float] the exact sum of the values added to the sketch.
-    attr_reader :sum
 
     # Add a value to the sketch.
     # @param [Float] val
@@ -134,9 +112,7 @@ module DDSketch
       @count += weight
       @sum += val * weight
       @min = val if val < @min
-
       @max = val if val > @max
-
     end
 
     # Return the approximate value at the specified quantile.
@@ -150,7 +126,7 @@ module DDSketch
       rank = quantile * (@count - 1)
       if rank < @negative_store.count
         reversed_rank = @negative_store.count - rank - 1
-        key = @negative_store.key_at_rank(reversed_rank, lower = false)
+        key = @negative_store.key_at_rank(reversed_rank, false)
         quantile_value = -@mapping.value(key)
       elsif rank < @zero_count + @negative_store.count
         return 0
@@ -176,7 +152,7 @@ module DDSketch
       return if sketch.count == 0
 
       if @count == 0
-        copy(sketch)
+        _copy(sketch)
         return
       end
 
@@ -193,12 +169,16 @@ module DDSketch
       @max = sketch.max if sketch.max > @max
     end
 
+    def num_values
+      @count
+    end
+
     private
 
     # Two sketches can be merged only if their gammas are equal.
     # @param [BaseDDSketch] other
     def mergeable(other)
-      @mapping.gamma == other._mapping.gamma
+      @mapping.gamma == other.mapping.gamma
     end
 
     # Copy the input sketch into this one
@@ -228,17 +208,16 @@ module DDSketch
         relative_accuracy = DEFAULT_REL_ACC
       end
 
-      mapping = LogarithmicMapping(relative_accuracy)
-      store = DenseStore()
-      negative_store = DenseStore()
+      mapping = LogarithmicMapping.new(relative_accuracy)
+      store = DenseStore.new
+      negative_store = DenseStore.new
 
       super(
-        mapping = mapping,
-        store = store,
-        negative_store = negative_store,
-        zero_count = 0.0,
+        mapping,
+        store,
+        negative_store,
+        0.0
       )
-
     end
   end
 
@@ -263,16 +242,16 @@ module DDSketch
         bin_limit = DEFAULT_BIN_LIMIT
       end
 
-      mapping = LogarithmicMapping(relative_accuracy)
-      store = CollapsingLowestDenseStore(bin_limit)
-      negative_store = CollapsingLowestDenseStore(bin_limit)
-      super(
-        mapping = mapping,
-        store = store,
-        negative_store = negative_store,
-        zero_count = 0.0,
-      )
+      mapping = LogarithmicMapping.new(relative_accuracy)
+      store = CollapsingLowestDenseStore.new(bin_limit)
+      negative_store = CollapsingLowestDenseStore.new(bin_limit)
 
+      super(
+        mapping,
+        store,
+        negative_store,
+        0.0
+      )
     end
   end
 
@@ -296,14 +275,14 @@ module DDSketch
         bin_limit = DEFAULT_BIN_LIMIT
       end
 
-      mapping = LogarithmicMapping(relative_accuracy)
-      store = CollapsingHighestDenseStore(bin_limit)
-      negative_store = CollapsingHighestDenseStore(bin_limit)
+      mapping = LogarithmicMapping.new(relative_accuracy)
+      store = CollapsingHighestDenseStore.new(bin_limit)
+      negative_store = CollapsingHighestDenseStore.new(bin_limit)
       super(
-        mapping = mapping,
-        store = store,
-        negative_store = negative_store,
-        zero_count = 0.0,
+        mapping,
+        store,
+        negative_store,
+        0.0
       )
     end
   end

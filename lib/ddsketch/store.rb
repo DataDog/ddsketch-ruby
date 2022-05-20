@@ -13,33 +13,6 @@
 module DDSketch
   CHUNK_SIZE = 128
 
-  # class _NegativeIntInfinity(int):
-  #   def __ge__(x):
-  #     return False
-  #
-  #   __gt__ = __ge__
-  #
-  #   def __lt__(x):
-  #     return True
-  #
-  #   __le__ = __lt__
-  #
-  #
-  #   class _PositiveIntInfinity(int):
-  #     def __ge__(x):
-  #       return True
-  #
-  #     __gt__ = __ge__
-  #
-  #     def __lt__(x):
-  #       return False
-  #
-  #     __le__ = __lt__
-  #
-  #
-  #     _neg_infinity = _NegativeIntInfinity()
-  #     _pos_infinity = _PositiveIntInfinity()
-
   #     """
   # Stores map integers to counters. They can be seen as a collection of bins.
   # We start with 128 bins and grow the store in chunks of 128 unless specified
@@ -53,11 +26,13 @@ module DDSketch
     #     min_key (int): the minimum key bin
     #     max_key (int): the maximum key bin
     # """
+    attr_accessor :count, :min_key, :max_key
+
     def initialize
       # type: () -> None
-      self.count = 0 # type: float
-      self.min_key = _pos_infinity # type: int
-      self.max_key = _neg_infinity # type: int
+      @count = 0 # type: float
+      @min_key = Float::INFINITY # type: int
+      @max_key = -Float::INFINITY # type: int
     end
 
     # """Copies the input store into this one."""
@@ -116,13 +91,15 @@ module DDSketch
     #     max_key (int): the maximum key bin
     #     offset (int): the difference btw the keys and the index in which they are stored
     #     bins (List[float]): the bins
+    attr_accessor :chunk_size, :offset, :bins
+
     def initialize(chunk_size = CHUNK_SIZE)
       # type: (int) -> None
-      super
+      super()
 
-      self.chunk_size = chunk_size # type: int
-      self.offset = 0 # type: int
-      self.bins = [] # type: List[float]
+      @chunk_size = chunk_size # type: int
+      @offset = 0 # type: int
+      @bins = [] # type: List[float]
     end
 
     def to_s
@@ -131,7 +108,7 @@ module DDSketch
       for i, sbin in enumerate(self.bins)
         repr_str += "#{i + offset}: #{sbin}, "
       end
-      repr_str += "}}, min_key:#{min_key}, max_key:#{max_key}, offset:#{offset}"
+      repr_str += "}, min_key:#{min_key}, max_key:#{max_key}, offset:#{offset}"
       return repr_str
     end
 
@@ -147,7 +124,7 @@ module DDSketch
     #        """Return the number of bins."""
     def length()
       # type: () -> int
-      return len(self.bins)
+      return self.bins.length
     end
 
     def add(key, weight = 1.0)
@@ -172,15 +149,15 @@ module DDSketch
     def _get_new_length(new_min_key, new_max_key)
       # type: (int, int) -> int
       desired_length = new_max_key - new_min_key + 1
-      return self.chunk_size * int(math.ceil(desired_length / self.chunk_size))
+      return self.chunk_size * ((desired_length.to_f / self.chunk_size).ceil)
     end
 
     #        """Grow the bins as necessary and call _adjust"""
-    def _extend_range(key, second_key = None)
+    def _extend_range(key, _second_key = nil)
       # type: (int, Optional[int]) -> None
-      second_key = second_key or key
-      new_min_key = min(key, second_key, self.min_key)
-      new_max_key = max(key, second_key, self.max_key)
+      second_key = _second_key || key
+      new_min_key = [key, second_key, self.min_key].min
+      new_max_key = [key, second_key, self.max_key].max
 
       if self.length() == 0
         # initialize bins
@@ -188,7 +165,7 @@ module DDSketch
         self.offset = new_min_key
         self._adjust(new_min_key, new_max_key)
 
-      elsif new_min_key >= self.min_key and new_max_key < self.offset + self.length()
+      elsif new_min_key >= self.min_key && (new_max_key < (self.offset + self.length()))
         # no need to change the range; just update min/max keys
         self.min_key = new_min_key
         self.max_key = new_max_key
@@ -197,7 +174,7 @@ module DDSketch
         # grow the bins
         new_length = self._get_new_length(new_min_key, new_max_key)
         if new_length > self.length()
-          self.bins.extend([0.0] * (new_length - self.length()))
+          self.bins.append(*([0.0] * (new_length - self.length())))
         end
         self._adjust(new_min_key, new_max_key)
       end
@@ -208,7 +185,6 @@ module DDSketch
     #         " ""
     def _adjust(new_min_key, new_max_key)
       # type: (int, int) -> None
-
       self._center_bins(new_min_key, new_max_key)
       self.min_key = new_min_key
       self.max_key = new_max_key
@@ -219,11 +195,11 @@ module DDSketch
       # type: (int) -> None
 
       if shift > 0
-        self.bins = self.bins[0..-shift]
-        self.bins[0..0] = [0.0] * shift # TODO: This used to be self.bins[:0]
+        self.bins = self.bins[0...(-shift)]
+        self.bins.prepend(*([0.0] * shift))
       else
-        self.bins = self.bins[abs(shift)..-1]
-        self.bins.extend([0.0] * abs(shift))
+        self.bins = self.bins[(shift.abs)..-1]
+        self.bins.append(*([0.0] * (shift.abs)))
       end
       self.offset -= shift
     end
@@ -231,16 +207,25 @@ module DDSketch
     # """Center the bins; this changes the offset."""
     def _center_bins(new_min_key, new_max_key)
       # type: (int, int) -> None
-      middle_key = new_min_key + (new_max_key - new_min_key + 1).floor_div(2)
-      self._shift_bins(self.offset + self.length().floor_div(2) - middle_key)
+      middle_key = new_min_key + (new_max_key - new_min_key + 1).div(2)
+      self._shift_bins(self.offset + self.length().div(2) - middle_key)
     end
 
     def key_at_rank(rank, lower = true)
       # type: (float, bool) -> int
       running_ct = 0.0
-      for i, bin_ct in enumerate(self.bins)
+
+      # for i, bin_ct in enumerate(self.bins)
+      #   running_ct += bin_ct
+      #   if (lower and running_ct > rank) or (not lower and running_ct >= rank + 1)
+      #     return i + self.offset
+      #   end
+      # end
+      self.bins.each_with_index do |bin_ct, i|
         running_ct += bin_ct
-        if (lower and running_ct > rank) or (not lower and running_ct >= rank + 1)
+
+        ## ??
+        if (lower && running_ct > rank) || (!lower && running_ct >= rank + 1)
           return i + self.offset
         end
       end
@@ -258,11 +243,12 @@ module DDSketch
         return
       end
 
-      if store.min_key < self.min_key or store.max_key > self.max_key
+      if store.min_key < self.min_key || store.max_key > self.max_key
         self._extend_range(store.min_key, store.max_key)
       end
 
-      for key in range(store.min_key, store.max_key + 1)
+      # for key in range(store.min_key, store.max_key + 1)
+      store.min_key.upto(store.max_key).each do |key|
         self.bins[key - self.offset] += store.bins[key - store.offset]
       end
 
@@ -284,11 +270,13 @@ module DDSketch
     #     max_key (int): the maximum key bin
     #     offset (int): the difference btw the keys and the index in which they are stored
     #     bins (List[int]): the bins
+    attr_accessor :bin_limit, :is_collapsed
+
     def initialize(bin_limit, chunk_size = CHUNK_SIZE)
       # type: (int, int) -> None
-      super
-      self.bin_limit = bin_limit
-      self.is_collapsed = false
+      super(chunk_size)
+      @bin_limit = bin_limit
+      @is_collapsed = false
     end
 
     def copy(store)
@@ -296,16 +284,16 @@ module DDSketch
       # type: (CollapsingLowestDenseStore) -> None
       self.bin_limit = store.bin_limit
       self.is_collapsed = store.is_collapsed
-      super().copy(store)
+      super(store)
     end
 
     def _get_new_length(new_min_key, new_max_key)
       # type: (int, int) -> int
       desired_length = new_max_key - new_min_key + 1
-      return min(
-        self.chunk_size * int(math.ceil(desired_length / self.chunk_size)),
-        self.bin_limit,
-      )
+      return [
+        self.chunk_size * ((desired_length.to_f / self.chunk_size).ceil),
+        self.bin_limit
+      ].min
     end
 
     # "" "Calculate the bin index for the key, extending the range if necessary." ""
@@ -349,12 +337,9 @@ module DDSketch
           if shift < 0
             collapse_start_index = self.min_key - self.offset
             collapse_end_index = new_min_key - self.offset
-            collapsed_count = sum(
-              self.bins[collapse_start_index: collapse_end_index]
-            )
-            self.bins[collapse_start_index: collapse_end_index] = [0.0] * (
-              new_min_key - self.min_key
-            )
+            # Python [:]
+            collapsed_count = self.bins[collapse_start_index...collapse_end_index].sum
+            self.bins[collapse_start_index...collapse_end_index] = [0.0] * (new_min_key - self.min_key)
             self.bins[collapse_end_index] += collapsed_count
             self.min_key = new_min_key
             # shift the buckets to make room for new_max_key
@@ -367,7 +352,7 @@ module DDSketch
         end
 
         self.max_key = new_max_key
-        self.is_collapsed = True
+        self.is_collapsed = true
       else
         self._center_bins(new_min_key, new_max_key)
         self.min_key = new_min_key
@@ -385,20 +370,21 @@ module DDSketch
         return
       end
 
-      if store.min_key < self.min_key or store.max_key > self.max_key
+      if store.min_key < self.min_key || store.max_key > self.max_key
         self._extend_range(store.min_key, store.max_key)
       end
 
       collapse_start_idx = store.min_key - store.offset
-      collapse_end_idx = min(self.min_key, store.max_key + 1) - store.offset
+      collapse_end_idx = [self.min_key, store.max_key + 1].min - store.offset
       if collapse_end_idx > collapse_start_idx
-        collapse_count = sum(store.bins[collapse_start_idx: collapse_end_idx])
+        collapse_count = store.bins[collapse_start_idx...collapse_end_idx].sum
         self.bins[0] += collapse_count
       else
         collapse_end_idx = collapse_start_idx
       end
 
-      for key in range(collapse_end_idx + store.offset, store.max_key + 1)
+      # for key in range(collapse_end_idx + store.offset, store.max_key + 1)
+      (collapse_end_idx + store.offset).upto(store.max_key).each do |key|
         self.bins[key - self.offset] += store.bins[key - store.offset]
       end
 
@@ -420,10 +406,12 @@ module DDSketch
     #     max_key (int): the maximum key bin
     #     offset (int): the difference btw the keys and the index in which they are stored
     #     bins (List[int]): the bins
+    attr_accessor :bin_limit, :is_collapsed
+
     def initialize(bin_limit, chunk_size = CHUNK_SIZE)
-      super
-      self.bin_limit = bin_limit
-      self.is_collapsed = False
+      super(chunk_size)
+      @bin_limit = bin_limit
+      @is_collapsed = false
     end
 
     def copy(store)
@@ -431,19 +419,17 @@ module DDSketch
       # type: (CollapsingHighestDenseStore) -> None
       self.bin_limit = store.bin_limit
       self.is_collapsed = store.is_collapsed
-      super().copy(store)
+      super(store)
     end
 
     def _get_new_length(new_min_key, new_max_key)
       # type: (int, int) -> int
       desired_length = new_max_key - new_min_key + 1
       # For some reason mypy can't infer that min(int, int) is an int, so cast it.
-      return int(
-        min(
-          self.chunk_size * int(math.ceil(desired_length / self.chunk_size)),
-          self.bin_limit,
-        )
-      )
+      return [
+        self.chunk_size * ((desired_length.to_f / self.chunk_size).ceil),
+        self.bin_limit
+      ].min
     end
 
     #"""Calculate the bin index for the key, extending the range if necessary"""
@@ -485,12 +471,9 @@ module DDSketch
           if shift > 0
             collapse_start_index = new_max_key - self.offset + 1
             collapse_end_index = self.max_key - self.offset + 1
-            collapsed_count = sum(
-              self.bins[collapse_start_index: collapse_end_index]
-            )
-            self.bins[collapse_start_index: collapse_end_index] = [0.0] * (
-              self.max_key - new_max_key
-            )
+            collapsed_count = self.bins[collapse_start_index...collapse_end_index].sum
+
+            self.bins[collapse_start_index...collapse_end_index] = [0.0] * (self.max_key - new_max_key)
             self.bins[collapse_start_index - 1] += collapsed_count
             self.max_key = new_max_key
             # shift the buckets to make room for new_max_key
@@ -503,7 +486,7 @@ module DDSketch
         end
 
         self.min_key = new_min_key
-        self.is_collapsed = True
+        self.is_collapsed = true
       else
         self._center_bins(new_min_key, new_max_key)
         self.min_key = new_min_key
@@ -526,15 +509,16 @@ module DDSketch
       end
 
       collapse_end_idx = store.max_key - store.offset + 1
-      collapse_start_idx = max(self.max_key + 1, store.min_key) - store.offset
+      collapse_start_idx = [self.max_key + 1, store.min_key].max - store.offset
       if collapse_end_idx > collapse_start_idx
-        collapse_count = sum(store.bins[collapse_start_idx: collapse_end_idx])
+        collapse_count = store.bins[collapse_start_idx...collapse_end_idx].sum
         self.bins[-1] += collapse_count
       else
         collapse_start_idx = collapse_end_idx
       end
 
-      for key in range(store.min_key, collapse_start_idx + store.offset)
+      # for key in range(store.min_key, collapse_start_idx + store.offset)
+      (store.min_key).upto(collapse_start_idx + store.offset - 1).each do |key|
         self.bins[key - self.offset] += store.bins[key - store.offset]
       end
 

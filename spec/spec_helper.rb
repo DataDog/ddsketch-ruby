@@ -100,3 +100,5 @@ RSpec.configure do |config|
 end
 
 require 'ddsketch'
+require 'pry'
+require 'pry-byebug'
