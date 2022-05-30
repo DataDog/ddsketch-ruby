@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Unless explicitly stated otherwise all files in this repository are licensed  under the Apache License 2.0.
 # This product includes software developed at Datadog (https://www.datadoghq.com/). Copyright 2021 Datadog, Inc.
 
@@ -32,44 +34,17 @@
 # <a href="https://github.com/DataDog/sketches-py/">Python</a>
 # <a href="https://github.com/DataDog/sketches-js/">JavaScript</a>
 
-# from .exception import IllegalArgumentException
-# from .exception import UnequalSketchParametersException
-# from .mapping import LogarithmicMapping
-# from .store import CollapsingHighestDenseStore
-# from .store import CollapsingLowestDenseStore
-# from .store import DenseStore
-
-# from .mapping import KeyMapping
-# from .store import Store
-
 require 'ddsketch/exception'
 require 'ddsketch/mapping'
 require 'ddsketch/store'
 
 module DDSketch
   # The base implementation of DDSketch with neither mapping nor storage specified.
-  #
-  #  Args:
-  #      mapping (mapping.KeyMapping): map btw values and store bins
-  #      store (store.Store): storage for positive values
-  #      negative_store (store.Store): storage for negative values
-  #      zero_count (float): The count of zero values
-  #
-  #  Attributes:
-  #      relative_accuracy (float): the accuracy guarantee; referred to as alpha
-  #          in the paper. (0. < alpha < 1.)
-  #
-  #      count: the number of values seen by the sketch
-  #      min: the minimum value seen by the sketch
-  #      max: the maximum value seen by the sketch
-  #      sum: the sum of the values seen by the sketch
   class BaseDDSketch
     DEFAULT_REL_ACC = 0.01 # "alpha" in the paper
     DEFAULT_BIN_LIMIT = 2048
 
-    # type: (KeyMapping, Store, Store, float) -> nil
-    # @param [Float] zero_count
-    attr_reader :mapping, :store, :negative_store, :zero_count, :min, :max, :sum
+    attr_reader :mapping, :store, :negative_store, :zero_count, :min, :max, :sum, :count, :name
 
     def initialize(
       mapping,
@@ -89,16 +64,13 @@ module DDSketch
       @sum = 0.0
     end
 
-    attr_reader :count, :name, :sum, :zero_count
     def avg
       sum / count
     end
 
     # Add a value to the sketch.
-    # @param [Float] val
-    # @param [Float] weight
     def add(val, weight = 1.0)
-      raise IllegalArgumentException("weight must be a positive float") if weight <= 0.0
+      raise IllegalArgumentException('weight must be a positive float') if weight <= 0.0
 
       if val > @mapping.min_possible
         @store.add(@mapping.key(val), weight)
@@ -116,10 +88,6 @@ module DDSketch
     end
 
     # Return the approximate value at the specified quantile.
-    #
-    # @param [Float] quantile 0 <= quantile <=1
-    # @return [Float] the value at the specified quantile
-    # @return [nil] if the sketch is empty
     def get_quantile_value(quantile)
       return nil if quantile < 0 || quantile > 1 || @count == 0
 
@@ -136,17 +104,16 @@ module DDSketch
         )
         quantile_value = @mapping.value(key)
       end
-      return quantile_value
+      quantile_value
     end
 
     # Merge the given sketch into this one. After this operation, this sketch
     # encodes the values that were added to both this and the input sketch.
-    # @param [BaseDDSketch] sketch
     def merge(sketch)
       unless mergeable(sketch)
         raise UnequalSketchParametersException(
-                "Cannot merge two DDSketches with different parameters"
-              )
+          'Cannot merge two DDSketches with different parameters'
+        )
       end
 
       return if sketch.count == 0
@@ -176,13 +143,11 @@ module DDSketch
     private
 
     # Two sketches can be merged only if their gammas are equal.
-    # @param [BaseDDSketch] other
     def mergeable(other)
       @mapping.gamma == other.mapping.gamma
     end
 
     # Copy the input sketch into this one
-    # @param [BaseDDSketch] sketch
     def _copy(sketch)
       @store.copy(sketch.store)
       @negative_store.copy(sketch.negative_store)
@@ -200,13 +165,9 @@ module DDSketch
   # distributed with tails heavier than any subexponential.
   # (cf. http://www.vldb.org/pvldb/vol12/p2195-masson.pdf)
   class DDSketch < BaseDDSketch
-
-    # @param [Float] relative_accuracy
     def initialize(relative_accuracy = nil)
       # Make sure the parameters are valid
-      unless relative_accuracy
-        relative_accuracy = DEFAULT_REL_ACC
-      end
+      relative_accuracy ||= DEFAULT_REL_ACC
 
       mapping = LogarithmicMapping.new(relative_accuracy)
       store = DenseStore.new
@@ -229,18 +190,11 @@ module DDSketch
   # distributed with tails heavier than any subexponential.
   # (cf. http://www.vldb.org/pvldb/vol12/p2195-masson.pdf)
   class LogCollapsingLowestDenseDDSketch < BaseDDSketch
-
-    # @param [Float] relative_accuracy
-    # @param [Integer] bin_limit
     def initialize(relative_accuracy = nil, bin_limit = nil)
       # Make sure the parameters are valid
-      if relative_accuracy.nil?
-        relative_accuracy = DEFAULT_REL_ACC
-      end
+      relative_accuracy = DEFAULT_REL_ACC if relative_accuracy.nil?
 
-      if bin_limit.nil? || bin_limit < 0
-        bin_limit = DEFAULT_BIN_LIMIT
-      end
+      bin_limit = DEFAULT_BIN_LIMIT if bin_limit.nil? || bin_limit < 0
 
       mapping = LogarithmicMapping.new(relative_accuracy)
       store = CollapsingLowestDenseStore.new(bin_limit)
@@ -263,17 +217,11 @@ module DDSketch
   # distributed with tails heavier than any subexponential.
   # (cf. http://www.vldb.org/pvldb/vol12/p2195-masson.pdf)
   class LogCollapsingHighestDenseDDSketch < BaseDDSketch
-    # @param [Float] relative_accuracy
-    # @param [Integer] bin_limit
     def initialize(relative_accuracy = nil, bin_limit = nil)
       # Make sure the parameters are valid
-      if relative_accuracy.nil?
-        relative_accuracy = DEFAULT_REL_ACC
-      end
+      relative_accuracy = DEFAULT_REL_ACC if relative_accuracy.nil?
 
-      if bin_limit.nil? || bin_limit < 0
-        bin_limit = DEFAULT_BIN_LIMIT
-      end
+      bin_limit = DEFAULT_BIN_LIMIT if bin_limit.nil? || bin_limit < 0
 
       mapping = LogarithmicMapping.new(relative_accuracy)
       store = CollapsingHighestDenseStore.new(bin_limit)

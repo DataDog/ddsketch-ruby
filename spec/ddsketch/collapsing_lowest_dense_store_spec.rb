@@ -1,23 +1,9 @@
+# frozen_string_literal: true
+
 describe DDSketch::CollapsingLowestDenseStore do
-  EXTREME_MAX = 9223372036854775807
-  EXTREME_MIN = -EXTREME_MAX-1
-  # def _test_values(self, store, values):
-  #   counter = Counter(values)
-  #   expected_total_count = sum(counter.values())
-  #   assert expected_total_count == sum(store.bins)
+  extreme_max = 9223372036854775807
+  extreme_min = -extreme_max - 1
 
-  #   if expected_total_count == 0:
-  #       assert all([x == 0 for x in store.bins])
-  #   else:
-  #       assert not all([x == 0 for x in store.bins])
-
-  #       max_index = max(counter)
-  #       min_storable_index = max(float("-inf"), max_index - store.bin_limit + 1)
-  #       counter = Counter([max(x, min_storable_index) for x in values])
-
-  #       for i, sbin in enumerate(store.bins):
-  #           if sbin != 0:
-  #               assert counter[i + store.offset] == sbin
   def _test_values(store, values)
     counter = values.tally
 
@@ -26,21 +12,17 @@ describe DDSketch::CollapsingLowestDenseStore do
     expect(expected_total_count).to eq(store.bins.sum)
 
     if expected_total_count == 0
-      store.bins.each do |b|
-        expect(b).to eq(0)
-      end
+      expect(store.bins).to all(eq(0))
     else
       max_index = counter.keys.max
 
       # Does that make sense finding the max with -inf?
       min_storable_index = [-Float::INFINITY, max_index - store.bin_limit + 1].max
 
-     _counter = values.map { |v| [min_storable_index, v].max }.tally
+      _counter = values.map { |v| [min_storable_index, v].max }.tally # rubocop:todo Lint/UnderscorePrefixedVariableName
 
       store.bins.each_with_index do |bin, index|
-        if bin != 0
-          expect(bin).to eq(_counter.fetch(index + store.offset))
-        end
+        expect(bin).to eq(_counter.fetch(index + store.offset)) if bin != 0
       end
     end
   end
@@ -84,14 +66,14 @@ describe DDSketch::CollapsingLowestDenseStore do
     (0...100).to_a.reverse,
     Array.new(10) { |x| 2**x },
     Array.new(16) { |x| 2**x }.reverse,
-    (0...9).to_a.map{|i| Array.new(2*(i+1)) {i+1}}.flatten,
-    (0...9).to_a.map{|i| Array.new(2*(i+1)) {-(i+1)}}.flatten,
-    [EXTREME_MAX],
-    [EXTREME_MIN],
-    [0, EXTREME_MIN],
-    [0, EXTREME_MAX],
-    [EXTREME_MIN, EXTREME_MAX],
-    [EXTREME_MAX, EXTREME_MIN]
+    (0...9).to_a.map { |i| Array.new(2 * (i + 1)) { i + 1 } }.flatten,
+    (0...9).to_a.map { |i| Array.new(2 * (i + 1)) { -(i + 1) } }.flatten,
+    [extreme_max],
+    [extreme_min],
+    [0, extreme_min],
+    [0, extreme_max],
+    [extreme_min, extreme_max],
+    [extreme_max, extreme_min]
   ].each do |values|
     it do
       _test_store(values)
@@ -99,30 +81,30 @@ describe DDSketch::CollapsingLowestDenseStore do
   end
 
   [
-    [[],[]],
+    [[], []],
     [[-10000], [10000]],
     [[10000], [-10000]],
     [[10000], [-10000], [0]],
     [[10000, 0], [-10000], [0]],
     [[2, 2], [2, 2, 2], [2]],
     [[-8, -8], [-8]],
-    [[0], [EXTREME_MIN]],
-    [[0], [EXTREME_MAX]],
-    [[EXTREME_MIN], [0]],
-    [[EXTREME_MAX], [0]],
-    [[EXTREME_MIN], [EXTREME_MIN]],
-    [[EXTREME_MAX], [EXTREME_MAX]],
-    [[EXTREME_MIN], [EXTREME_MAX]],
-    [[EXTREME_MAX], [EXTREME_MIN]],
-    [[0], [EXTREME_MIN, EXTREME_MAX]],
-    [[EXTREME_MIN, EXTREME_MAX], [0]]
+    [[0], [extreme_min]],
+    [[0], [extreme_max]],
+    [[extreme_min], [0]],
+    [[extreme_max], [0]],
+    [[extreme_min], [extreme_min]],
+    [[extreme_max], [extreme_max]],
+    [[extreme_min], [extreme_max]],
+    [[extreme_max], [extreme_min]],
+    [[0], [extreme_min, extreme_max]],
+    [[extreme_min, extreme_max], [0]]
   ].each do |list_values|
     it do
       _test_merging(list_values)
     end
   end
 
-  it "Test copying empty stores" do
+  it 'Test copying empty stores' do
     store = described_class.new(10)
 
     store.copy(described_class.new(10))
@@ -130,7 +112,7 @@ describe DDSketch::CollapsingLowestDenseStore do
     expect(store.count).to eq(0)
   end
 
-  it "Test copying stores" do
+  it 'Test copying stores' do
     store = described_class.new(10)
     new_store = described_class.new(10)
 
@@ -140,5 +122,4 @@ describe DDSketch::CollapsingLowestDenseStore do
 
     expect(store.count).to eq(1)
   end
-
 end

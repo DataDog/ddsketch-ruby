@@ -1,119 +1,54 @@
-# from __future__ import division
-
-# Unless explicitly stated otherwise all files in this repository are licensed
-# under the Apache License 2.0.
-# This product includes software developed at Datadog (https://www.datadoghq.com/).
-# Copyright 2020 Datadog, Inc.
-
-# import abc
-# import math
-# import typing
-# import six
+# frozen_string_literal: true
 
 module DDSketch
   CHUNK_SIZE = 128
 
-  #     """
   # Stores map integers to counters. They can be seen as a collection of bins.
   # We start with 128 bins and grow the store in chunks of 128 unless specified
   # otherwise.
-  # """
   class Store
-    #   """The basic specification of a store
-    #
-    # Attributes:
-    #     count (float): the sum of the counts for the bins
-    #     min_key (int): the minimum key bin
-    #     max_key (int): the maximum key bin
-    # """
     attr_accessor :count, :min_key, :max_key
 
     def initialize
-      # type: () -> None
-      @count = 0 # type: float
-      @min_key = Float::INFINITY # type: int
-      @max_key = -Float::INFINITY # type: int
+      @count = 0
+      @min_key = Float::INFINITY
+      @max_key = -Float::INFINITY
     end
 
-    # """Copies the input store into this one."""
-    # @abstract
     def copy(store) end
 
-    "" "Return the number of bins." ""
-    # @abstract
-    def length()
-      # type: () -> int
-    end
+    def length() end
 
-    # """Updates the counter at the specified index key, growing the number of bins if
-    #     necessary.
-    #     """
-    # @abstract
-    def add(key, weight = 1.0)
-      # type: (int, float) -> None
-    end
+    def add(key, weight = 1.0) end
 
-    # """Return the key for the value at given rank.
-    #
-    #     E.g., if the non-zero bins are [1, 1] for keys a, b with no offset
-    #
-    #     if lower = True:
-    #          key_at_rank(x) = a for x in [0, 1)
-    #          key_at_rank(x) = b for x in [1, 2)
-    #
-    #     if lower = False:
-    #          key_at_rank(x) = a for x in (-1, 0]
-    #          key_at_rank(x) = b for x in (0, 1]
-    #     """
-    # @abstract
-    def key_at_rank(rank, lower = true)
-      # type: (float, bool) -> int
-    end
+    def key_at_rank(rank, lower = true) end
 
-    # """Merge another store into this one. This should be equivalent as running the
-    #     add operations that have been run on the other store on this one.
-    #     """
-    # @abstract
-    def merge(store)
-      # type: (Store) -> None
-    end
+    def merge(store) end
   end
 
-  #A dense store that keeps all the bins between the bin for the min_key and the
-  #     bin for the max_key.
+  # A dense store that keeps all the bins between the bin for the min_key and the
+  # bin for the max_key.
   class DenseStore < Store
-    # Args:
-    #     chunk_size (int, optional): the number of bins to grow by
-    #
-    # Attributes:
-    #     count (int): the sum of the counts for the bins
-    #     min_key (int): the minimum key bin
-    #     max_key (int): the maximum key bin
-    #     offset (int): the difference btw the keys and the index in which they are stored
-    #     bins (List[float]): the bins
     attr_accessor :chunk_size, :offset, :bins
 
     def initialize(chunk_size = CHUNK_SIZE)
-      # type: (int) -> None
       super()
 
-      @chunk_size = chunk_size # type: int
-      @offset = 0 # type: int
-      @bins = [] # type: List[float]
+      @chunk_size = chunk_size
+      @offset = 0
+      @bins = []
     end
 
-    def to_s
-      # type: () -> str
-      repr_str = "{"
-      for i, sbin in enumerate(self.bins)
-        repr_str += "#{i + offset}: #{sbin}, "
-      end
-      repr_str += "}, min_key:#{min_key}, max_key:#{max_key}, offset:#{offset}"
-      return repr_str
-    end
+    # def to_s
+    #   repr_str = "{"
+    #   for i, sbin in enumerate(self.bins)
+    #     repr_str += "#{i + offset}: #{sbin}, "
+    #   end
+    #   repr_str += "}, min_key:#{min_key}, max_key:#{max_key}, offset:#{offset}"
+    #   return repr_str
+    # end
 
     def copy(store)
-      # type: (DenseStore) -> None
       self.bins = store.bins.dup
       self.count = store.count
       self.min_key = store.min_key
@@ -121,271 +56,104 @@ module DDSketch
       self.offset = store.offset
     end
 
-    #        """Return the number of bins."""
-    def length()
-      # type: () -> int
-      return self.bins.length
+    def length
+      bins.length
     end
 
     def add(key, weight = 1.0)
-      # type: (int, float) -> None
-      idx = self._get_index(key)
-      self.bins[idx] += weight
+      idx = _get_index(key)
+      bins[idx] += weight
       self.count += weight
     end
 
-    #        """Calculate the bin index for the key, extending the range if necessary."""
+    # Calculate the bin index for the key, extending the range if necessary.
     def _get_index(key)
-      # type: (int) -> int
-      if key < self.min_key
-        self._extend_range(key)
-      elsif key > self.max_key
-        self._extend_range(key)
-      end
+      _extend_range(key) if key < min_key || key > max_key
 
-      return key - self.offset
+      key - offset
     end
 
     def _get_new_length(new_min_key, new_max_key)
-      # type: (int, int) -> int
       desired_length = new_max_key - new_min_key + 1
-      return self.chunk_size * ((desired_length.to_f / self.chunk_size).ceil)
+      chunk_size * (desired_length.to_f / chunk_size).ceil
     end
 
-    #        """Grow the bins as necessary and call _adjust"""
-    def _extend_range(key, _second_key = nil)
-      # type: (int, Optional[int]) -> None
+    # Grow the bins as necessary and call _adjust
+    def _extend_range(key, _second_key = nil) # rubocop:todo Lint/UnderscorePrefixedVariableName
       second_key = _second_key || key
-      new_min_key = [key, second_key, self.min_key].min
-      new_max_key = [key, second_key, self.max_key].max
+      new_min_key = [key, second_key, min_key].min
+      new_max_key = [key, second_key, max_key].max
 
-      if self.length() == 0
+      if length == 0
         # initialize bins
-        self.bins = [0.0] * self._get_new_length(new_min_key, new_max_key)
+        self.bins = [0.0] * _get_new_length(new_min_key, new_max_key)
         self.offset = new_min_key
-        self._adjust(new_min_key, new_max_key)
+        _adjust(new_min_key, new_max_key)
 
-      elsif new_min_key >= self.min_key && (new_max_key < (self.offset + self.length()))
+      elsif new_min_key >= min_key && (new_max_key < (offset + length))
         # no need to change the range; just update min/max keys
         self.min_key = new_min_key
         self.max_key = new_max_key
 
       else
         # grow the bins
-        new_length = self._get_new_length(new_min_key, new_max_key)
-        if new_length > self.length()
-          self.bins.append(*([0.0] * (new_length - self.length())))
-        end
-        self._adjust(new_min_key, new_max_key)
+        new_length = _get_new_length(new_min_key, new_max_key)
+        bins.append(*([0.0] * (new_length - length))) if new_length > length
+        _adjust(new_min_key, new_max_key)
       end
     end
 
-    #    "" "Adjust the bins, the offset, the min_key, and max_key, without resizing the
-    #         bins, in order to try making it fit the specified range.
-    #         " ""
+    # Adjust the bins, the offset, the min_key, and max_key, without resizing the
+    # bins, in order to try making it fit the specified range.
     def _adjust(new_min_key, new_max_key)
-      # type: (int, int) -> None
-      self._center_bins(new_min_key, new_max_key)
+      _center_bins(new_min_key, new_max_key)
       self.min_key = new_min_key
       self.max_key = new_max_key
     end
 
-    #"" "Shift the bins; this changes the offset." ""
+    # Shift the bins; this changes the offset.
     def _shift_bins(shift)
-      # type: (int) -> None
-
       if shift > 0
-        self.bins = self.bins[0...(-shift)]
-        self.bins.prepend(*([0.0] * shift))
+        self.bins = bins[0...-shift]
+        bins.prepend(*([0.0] * shift))
       else
-        self.bins = self.bins[(shift.abs)..-1]
-        self.bins.append(*([0.0] * (shift.abs)))
+        self.bins = bins[(shift.abs)..-1]
+        bins.append(*([0.0] * shift.abs))
       end
       self.offset -= shift
     end
 
-    # """Center the bins; this changes the offset."""
+    # Center the bins; this changes the offset.
     def _center_bins(new_min_key, new_max_key)
-      # type: (int, int) -> None
       middle_key = new_min_key + (new_max_key - new_min_key + 1).div(2)
-      self._shift_bins(self.offset + self.length().div(2) - middle_key)
+      _shift_bins(self.offset + length.div(2) - middle_key)
     end
 
     def key_at_rank(rank, lower = true)
-      # type: (float, bool) -> int
       running_ct = 0.0
 
-      # for i, bin_ct in enumerate(self.bins)
-      #   running_ct += bin_ct
-      #   if (lower and running_ct > rank) or (not lower and running_ct >= rank + 1)
-      #     return i + self.offset
-      #   end
-      # end
-      self.bins.each_with_index do |bin_ct, i|
+      bins.each_with_index do |bin_ct, i|
         running_ct += bin_ct
 
         ## ??
-        if (lower && running_ct > rank) || (!lower && running_ct >= rank + 1)
-          return i + self.offset
-        end
+        return i + self.offset if (lower && running_ct > rank) || (!lower && running_ct >= rank + 1)
       end
 
-      return self.max_key
+      max_key
     end
 
     def merge(store)
-      # type: ignore[override]
-      # type: (DenseStore) -> None
       return if store.count == 0
 
       if self.count == 0
-        self.copy(store)
+        copy(store)
         return
       end
 
-      if store.min_key < self.min_key || store.max_key > self.max_key
-        self._extend_range(store.min_key, store.max_key)
-      end
+      _extend_range(store.min_key, store.max_key) if store.min_key < min_key || store.max_key > max_key
 
-      # for key in range(store.min_key, store.max_key + 1)
       store.min_key.upto(store.max_key).each do |key|
-        self.bins[key - self.offset] += store.bins[key - store.offset]
-      end
-
-      self.count += store.count
-    end
-  end
-
-  #A dense store that keeps all the bins between the bin for the min_key and the
-  #     bin for the max_key, but collapsing the left-most bins if the number of bins
-  #     exceeds the bin_limit
-  class CollapsingLowestDenseStore < DenseStore
-    # Args:
-    #     bin_limit (int): the maximum number of bins
-    #     chunk_size (int, optional): the number of bins to grow by
-    #
-    # Attributes:
-    #     count (int): the sum of the counts for the bins
-    #     min_key (int): the minimum key bin
-    #     max_key (int): the maximum key bin
-    #     offset (int): the difference btw the keys and the index in which they are stored
-    #     bins (List[int]): the bins
-    attr_accessor :bin_limit, :is_collapsed
-
-    def initialize(bin_limit, chunk_size = CHUNK_SIZE)
-      # type: (int, int) -> None
-      super(chunk_size)
-      @bin_limit = bin_limit
-      @is_collapsed = false
-    end
-
-    def copy(store)
-      # type: ignore[override]
-      # type: (CollapsingLowestDenseStore) -> None
-      self.bin_limit = store.bin_limit
-      self.is_collapsed = store.is_collapsed
-      super(store)
-    end
-
-    def _get_new_length(new_min_key, new_max_key)
-      # type: (int, int) -> int
-      desired_length = new_max_key - new_min_key + 1
-      return [
-        self.chunk_size * ((desired_length.to_f / self.chunk_size).ceil),
-        self.bin_limit
-      ].min
-    end
-
-    # "" "Calculate the bin index for the key, extending the range if necessary." ""
-    def _get_index(key)
-      # type: (int) -> int
-
-      if key < self.min_key
-        if self.is_collapsed
-          return 0
-        end
-
-        self._extend_range(key)
-        if self.is_collapsed
-          return 0
-        end
-      elsif key > self.max_key
-        self._extend_range(key)
-      end
-
-      return key - self.offset
-
-    end
-
-    # Override. Adjust the bins, the offset, the min_key, and max_key, without
-    # resizing the bins, in order to try making it fit the specified
-    # range. Collapse to the left if necessary.
-    def _adjust(new_min_key, new_max_key)
-      # type: (int, int) -> None
-      if new_max_key - new_min_key + 1 > self.length()
-        # The range of keys is too wide, the lowest bins need to be collapsed.
-        new_min_key = new_max_key - self.length() + 1
-
-        if new_min_key >= self.max_key
-          # put everything in the first bin
-          self.offset = new_min_key
-          self.min_key = new_min_key
-          self.bins = [0.0] * self.length()
-          self.bins[0] = self.count
-        else
-          shift = self.offset - new_min_key
-          if shift < 0
-            collapse_start_index = self.min_key - self.offset
-            collapse_end_index = new_min_key - self.offset
-            # Python [:]
-            collapsed_count = self.bins[collapse_start_index...collapse_end_index].sum
-            self.bins[collapse_start_index...collapse_end_index] = [0.0] * (new_min_key - self.min_key)
-            self.bins[collapse_end_index] += collapsed_count
-            self.min_key = new_min_key
-            # shift the buckets to make room for new_max_key
-            self._shift_bins(shift)
-          else
-            self.min_key = new_min_key
-            # shift the buckets to make room for new_min_key
-            self._shift_bins(shift)
-          end
-        end
-
-        self.max_key = new_max_key
-        self.is_collapsed = true
-      else
-        self._center_bins(new_min_key, new_max_key)
-        self.min_key = new_min_key
-        self.max_key = new_max_key
-      end
-    end
-
-    def merge(store)
-      # type: ignore[override]
-      # type: (CollapsingLowestDenseStore) -> None  # type: ignore[override]
-      return if store.count == 0
-
-      if self.count == 0
-        self.copy(store)
-        return
-      end
-
-      if store.min_key < self.min_key || store.max_key > self.max_key
-        self._extend_range(store.min_key, store.max_key)
-      end
-
-      collapse_start_idx = store.min_key - store.offset
-      collapse_end_idx = [self.min_key, store.max_key + 1].min - store.offset
-      if collapse_end_idx > collapse_start_idx
-        collapse_count = store.bins[collapse_start_idx...collapse_end_idx].sum
-        self.bins[0] += collapse_count
-      else
-        collapse_end_idx = collapse_start_idx
-      end
-
-      # for key in range(collapse_end_idx + store.offset, store.max_key + 1)
-      (collapse_end_idx + store.offset).upto(store.max_key).each do |key|
-        self.bins[key - self.offset] += store.bins[key - store.offset]
+        bins[key - self.offset] += store.bins[key - store.offset]
       end
 
       self.count += store.count
@@ -393,19 +161,9 @@ module DDSketch
   end
 
   # A dense store that keeps all the bins between the bin for the min_key and the
-  #                                                         bin for the max_key, but collapsing the right-most bins if the number of bins
-  #                                                         exceeds the bin_limit
-  class CollapsingHighestDenseStore < DenseStore
-    # Args:
-    #     bin_limit (int): the maximum number of bins
-    #     chunk_size (int, optional): the number of bins to grow by
-    #
-    # Attributes:
-    #     count (int): the sum of the counts for the bins
-    #     min_key (int): the minimum key bin
-    #     max_key (int): the maximum key bin
-    #     offset (int): the difference btw the keys and the index in which they are stored
-    #     bins (List[int]): the bins
+  # bin for the max_key, but collapsing the left-most bins if the number of bins
+  # exceeds the bin_limit
+  class CollapsingLowestDenseStore < DenseStore
     attr_accessor :bin_limit, :is_collapsed
 
     def initialize(bin_limit, chunk_size = CHUNK_SIZE)
@@ -415,115 +173,203 @@ module DDSketch
     end
 
     def copy(store)
-      # type: ignore[override]
-      # type: (CollapsingHighestDenseStore) -> None
       self.bin_limit = store.bin_limit
       self.is_collapsed = store.is_collapsed
       super(store)
     end
 
     def _get_new_length(new_min_key, new_max_key)
-      # type: (int, int) -> int
       desired_length = new_max_key - new_min_key + 1
-      # For some reason mypy can't infer that min(int, int) is an int, so cast it.
-      return [
-        self.chunk_size * ((desired_length.to_f / self.chunk_size).ceil),
-        self.bin_limit
+
+      [
+        chunk_size * (desired_length.to_f / chunk_size).ceil,
+        bin_limit
       ].min
     end
 
-    #"""Calculate the bin index for the key, extending the range if necessary"""
+    # Calculate the bin index for the key, extending the range if necessary.
     def _get_index(key)
-      # type: (int) -> int
+      if key < min_key
+        return 0 if is_collapsed
 
-      if key > self.max_key
-        if self.is_collapsed
-          return self.length() - 1
-        end
-
-        self._extend_range(key)
-        if self.is_collapsed
-          return self.length() - 1
-        end
-      elsif key < self.min_key
-        self._extend_range(key)
+        _extend_range(key)
+        return 0 if is_collapsed
+      elsif key > max_key
+        _extend_range(key)
       end
-      return key - self.offset
+
+      key - self.offset
     end
 
-    #Override. Adjust the bins, the offset, the min_key, and max_key, without
+    # Override. Adjust the bins, the offset, the min_key, and max_key, without
     # resizing the bins, in order to try making it fit the specified
     # range. Collapse to the left if necessary.
     def _adjust(new_min_key, new_max_key)
-      # type: (int, int) -> None
-      if new_max_key - new_min_key + 1 > self.length()
+      if new_max_key - new_min_key + 1 > length
         # The range of keys is too wide, the lowest bins need to be collapsed.
-        new_max_key = new_min_key + self.length() - 1
+        new_min_key = new_max_key - length + 1
 
-        if new_max_key <= self.min_key
-          # put everything in the last bin
+        if new_min_key >= max_key
+          # put everything in the first bin
           self.offset = new_min_key
-          self.max_key = new_max_key
-          self.bins = [0.0] * self.length()
-          self.bins[-1] = self.count
+          self.min_key = new_min_key
+          self.bins = [0.0] * length
+          bins[0] = self.count
         else
           shift = self.offset - new_min_key
-          if shift > 0
-            collapse_start_index = new_max_key - self.offset + 1
-            collapse_end_index = self.max_key - self.offset + 1
-            collapsed_count = self.bins[collapse_start_index...collapse_end_index].sum
 
-            self.bins[collapse_start_index...collapse_end_index] = [0.0] * (self.max_key - new_max_key)
-            self.bins[collapse_start_index - 1] += collapsed_count
-            self.max_key = new_max_key
-            # shift the buckets to make room for new_max_key
-            self._shift_bins(shift)
-          else
-            self.max_key = new_max_key
-            # shift the buckets to make room for new_min_key
-            self._shift_bins(shift)
+          if shift < 0
+            collapse_start_index = min_key - self.offset
+            collapse_end_index = new_min_key - self.offset
+            collapsed_count = bins[collapse_start_index...collapse_end_index].sum
+
+            bins[collapse_start_index...collapse_end_index] = [0.0] * (new_min_key - min_key)
+            bins[collapse_end_index] += collapsed_count
           end
+
+          self.min_key = new_min_key
+          _shift_bins(shift)
         end
 
-        self.min_key = new_min_key
+        self.max_key = new_max_key
         self.is_collapsed = true
       else
-        self._center_bins(new_min_key, new_max_key)
+        _center_bins(new_min_key, new_max_key)
         self.min_key = new_min_key
         self.max_key = new_max_key
       end
     end
 
     def merge(store)
-      # type: ignore[override]
-      # type: (CollapsingHighestDenseStore) -> None  # type: ignore[override]
       return if store.count == 0
 
       if self.count == 0
-        self.copy(store)
+        copy(store)
         return
       end
 
-      if store.min_key < self.min_key or store.max_key > self.max_key
-        self._extend_range(store.min_key, store.max_key)
-      end
+      _extend_range(store.min_key, store.max_key) if store.min_key < min_key || store.max_key > max_key
 
-      collapse_end_idx = store.max_key - store.offset + 1
-      collapse_start_idx = [self.max_key + 1, store.min_key].max - store.offset
+      collapse_start_idx = store.min_key - store.offset
+      collapse_end_idx = [min_key, store.max_key + 1].min - store.offset
       if collapse_end_idx > collapse_start_idx
         collapse_count = store.bins[collapse_start_idx...collapse_end_idx].sum
-        self.bins[-1] += collapse_count
+        bins[0] += collapse_count
       else
-        collapse_start_idx = collapse_end_idx
+        collapse_end_idx = collapse_start_idx
       end
 
-      # for key in range(store.min_key, collapse_start_idx + store.offset)
-      (store.min_key).upto(collapse_start_idx + store.offset - 1).each do |key|
-        self.bins[key - self.offset] += store.bins[key - store.offset]
+      (collapse_end_idx + store.offset).upto(store.max_key).each do |key|
+        bins[key - self.offset] += store.bins[key - store.offset]
       end
 
       self.count += store.count
     end
   end
 
+  # A dense store that keeps all the bins between the bin for the min_key and the
+  # bin for the max_key, but collapsing the right-most bins if the number of bins
+  # exceeds the bin_limit
+  class CollapsingHighestDenseStore < DenseStore
+    attr_accessor :bin_limit, :is_collapsed
+
+    def initialize(bin_limit, chunk_size = CHUNK_SIZE)
+      super(chunk_size)
+      @bin_limit = bin_limit
+      @is_collapsed = false
+    end
+
+    def copy(store)
+      self.bin_limit = store.bin_limit
+      self.is_collapsed = store.is_collapsed
+      super(store)
+    end
+
+    def _get_new_length(new_min_key, new_max_key)
+      desired_length = new_max_key - new_min_key + 1
+      # For some reason mypy can't infer that min(int, int) is an int, so cast it.
+      [
+        chunk_size * (desired_length.to_f / chunk_size).ceil,
+        bin_limit
+      ].min
+    end
+
+    # Calculate the bin index for the key, extending the range if necessary
+    def _get_index(key)
+      if key > max_key
+        return length - 1 if is_collapsed
+
+        _extend_range(key)
+        return length - 1 if is_collapsed
+      elsif key < min_key
+        _extend_range(key)
+      end
+      key - self.offset
+    end
+
+    # Override. Adjust the bins, the offset, the min_key, and max_key, without
+    # resizing the bins, in order to try making it fit the specified
+    # range. Collapse to the left if necessary.
+    def _adjust(new_min_key, new_max_key)
+      if new_max_key - new_min_key + 1 > length
+        # The range of keys is too wide, the lowest bins need to be collapsed.
+        new_max_key = new_min_key + length - 1
+
+        if new_max_key <= min_key
+          # put everything in the last bin
+          self.offset = new_min_key
+          self.max_key = new_max_key
+          self.bins = [0.0] * length
+          bins[-1] = self.count
+        else
+          shift = self.offset - new_min_key
+
+          if shift > 0
+            collapse_start_index = new_max_key - self.offset + 1
+            collapse_end_index = max_key - self.offset + 1
+            collapsed_count = bins[collapse_start_index...collapse_end_index].sum
+
+            bins[collapse_start_index...collapse_end_index] = [0.0] * (max_key - new_max_key)
+            bins[collapse_start_index - 1] += collapsed_count
+          end
+
+          self.max_key = new_max_key
+          _shift_bins(shift)
+        end
+
+        self.min_key = new_min_key
+        self.is_collapsed = true
+      else
+        _center_bins(new_min_key, new_max_key)
+        self.min_key = new_min_key
+        self.max_key = new_max_key
+      end
+    end
+
+    def merge(store)
+      return if store.count == 0
+
+      if self.count == 0
+        copy(store)
+        return
+      end
+
+      _extend_range(store.min_key, store.max_key) if (store.min_key < min_key) || (store.max_key > max_key)
+
+      collapse_end_idx = store.max_key - store.offset + 1
+      collapse_start_idx = [max_key + 1, store.min_key].max - store.offset
+      if collapse_end_idx > collapse_start_idx
+        collapse_count = store.bins[collapse_start_idx...collapse_end_idx].sum
+        bins[-1] += collapse_count
+      else
+        collapse_start_idx = collapse_end_idx
+      end
+
+      (store.min_key).upto(collapse_start_idx + store.offset - 1).each do |key|
+        bins[key - self.offset] += store.bins[key - store.offset]
+      end
+
+      self.count += store.count
+    end
+  end
 end

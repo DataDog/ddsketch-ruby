@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe DDSketch::DenseStore do
   def _test_values(store, values)
     counter = values.tally
@@ -6,14 +8,10 @@ describe DDSketch::DenseStore do
     expect(expected_total_count).to eq(store.bins.sum)
 
     if expected_total_count == 0
-      store.bins.each do |b|
-        expect(b).to eq(0)
-      end
+      expect(store.bins).to all(eq(0))
     else
       store.bins.each_with_index do |bin, index|
-        if bin != 0
-          expect(bin).to eq(counter.fetch(index + store.offset, 0))
-        end
+        expect(bin).to eq(counter.fetch(index + store.offset, 0)) if bin != 0
       end
     end
   end
@@ -25,11 +23,11 @@ describe DDSketch::DenseStore do
     (0...100).to_a.reverse,
     Array.new(10) { |x| 2**x },
     Array.new(16) { |x| 2**x }.reverse,
-    (0...9).to_a.map{|i| Array.new(2*(i+1)) {i+1}}.flatten,
-    (0...9).to_a.map{|i| Array.new(2*(i+1)) {-(i+1)}}.flatten
+    (0...9).to_a.map { |i| Array.new(2 * (i + 1)) { i + 1 } }.flatten,
+    (0...9).to_a.map { |i| Array.new(2 * (i + 1)) { -(i + 1) } }.flatten
   ].each do |values|
     it do
-      store = DDSketch::DenseStore.new
+      store = described_class.new
       values.each do |v|
         store.add(v)
       end
@@ -56,7 +54,7 @@ describe DDSketch::DenseStore do
   end
 
   [
-    [[],[]],
+    [[], []],
     [[-10000], [10000]],
     [[10000], [-10000]],
     [[10000], [-10000], [0]],
@@ -70,7 +68,7 @@ describe DDSketch::DenseStore do
   end
 
   it do
-    store = DDSketch::DenseStore.new
+    store = described_class.new
 
     store.add(4)
     store.add(10)
@@ -89,5 +87,4 @@ describe DDSketch::DenseStore do
     expect(store.key_at_rank(0.5, false)).to eq(10)
     expect(store.key_at_rank(1.5, false)).to eq(100)
   end
-
 end

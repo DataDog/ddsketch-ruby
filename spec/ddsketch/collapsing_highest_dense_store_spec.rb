@@ -1,6 +1,8 @@
+# frozen_string_literal: true
+
 describe DDSketch::CollapsingHighestDenseStore do
-  EXTREME_MAX = 9223372036854775807
-  EXTREME_MIN = -EXTREME_MAX-1
+  extreme_max = 9223372036854775807
+  extreme_min = -extreme_max - 1
 
   def _test_values(store, values)
     counter = values.tally
@@ -10,9 +12,7 @@ describe DDSketch::CollapsingHighestDenseStore do
     expect(expected_total_count).to eq(store.bins.sum)
 
     if expected_total_count == 0
-      store.bins.each do |b|
-        expect(b).to eq(0)
-      end
+      expect(store.bins).to all(eq(0))
     else
       # Does at least one non-zero assertion make sense?
       min_index = counter.keys.min
@@ -23,9 +23,7 @@ describe DDSketch::CollapsingHighestDenseStore do
       counter = values.map { |v| [max_storable_index, v].min }.tally
 
       store.bins.each_with_index do |bin, index|
-        if bin != 0
-          expect(bin).to eq(counter.fetch(index + store.offset))
-        end
+        expect(bin).to eq(counter.fetch(index + store.offset)) if bin != 0
       end
     end
   end
@@ -69,14 +67,14 @@ describe DDSketch::CollapsingHighestDenseStore do
     (0...100).to_a.reverse,
     Array.new(10) { |x| 2**x },
     Array.new(16) { |x| 2**x }.reverse,
-    (0...9).to_a.map{|i| Array.new(2*(i+1)) {i+1}}.flatten,
-    (0...9).to_a.map{|i| Array.new(2*(i+1)) {-(i+1)}}.flatten,
-    [EXTREME_MAX],
-    [EXTREME_MIN],
-    [0, EXTREME_MIN],
-    [0, EXTREME_MAX],
-    [EXTREME_MIN, EXTREME_MAX],
-    [EXTREME_MAX, EXTREME_MIN]
+    (0...9).to_a.map { |i| Array.new(2 * (i + 1)) { i + 1 } }.flatten,
+    (0...9).to_a.map { |i| Array.new(2 * (i + 1)) { -(i + 1) } }.flatten,
+    [extreme_max],
+    [extreme_min],
+    [0, extreme_min],
+    [0, extreme_max],
+    [extreme_min, extreme_max],
+    [extreme_max, extreme_min]
   ].each do |values|
     it do
       _test_store(values)
@@ -84,23 +82,23 @@ describe DDSketch::CollapsingHighestDenseStore do
   end
 
   [
-    [[],[]],
+    [[], []],
     [[-10000], [10000]],
     [[10000], [-10000]],
     [[10000], [-10000], [0]],
     [[10000, 0], [-10000], [0]],
     [[2, 2], [2, 2, 2], [2]],
     [[-8, -8], [-8]],
-    [[0], [EXTREME_MIN]],
-    [[0], [EXTREME_MAX]],
-    [[EXTREME_MIN], [0]],
-    [[EXTREME_MAX], [0]],
-    [[EXTREME_MIN], [EXTREME_MIN]],
-    [[EXTREME_MAX], [EXTREME_MAX]],
-    [[EXTREME_MIN], [EXTREME_MAX]],
-    [[EXTREME_MAX], [EXTREME_MIN]],
-    [[0], [EXTREME_MIN, EXTREME_MAX]],
-    [[EXTREME_MIN, EXTREME_MAX], [0]]
+    [[0], [extreme_min]],
+    [[0], [extreme_max]],
+    [[extreme_min], [0]],
+    [[extreme_max], [0]],
+    [[extreme_min], [extreme_min]],
+    [[extreme_max], [extreme_max]],
+    [[extreme_min], [extreme_max]],
+    [[extreme_max], [extreme_min]],
+    [[0], [extreme_min, extreme_max]],
+    [[extreme_min, extreme_max], [0]]
   ].each do |list_values|
     it do
       _test_merging(list_values)
