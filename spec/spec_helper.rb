@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
-
-if (ENV['SKIP_SIMPLECOV'] != '1')
+if ENV['SKIP_SIMPLECOV'] != '1'
   # +SimpleCov.start+ must be invoked before any application code is loaded
   require 'simplecov'
   SimpleCov.start do
@@ -25,9 +24,6 @@ end
 # it.
 #
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
-
-require 'pry'
-require 'pry-byebug'
 
 Dir['./spec/support/**/*.rb'].sort.each { |f| require f }
 require 'ddsketch'
