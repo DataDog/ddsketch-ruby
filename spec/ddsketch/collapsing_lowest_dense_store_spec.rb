@@ -5,7 +5,9 @@ describe DDSketch::CollapsingLowestDenseStore do
   extreme_min = -extreme_max - 1
 
   def _test_values(store, values)
-    counter = values.tally
+    counter = values.each_with_object(Hash.new(0)) do |v, hash|
+      hash[v] += 1
+    end
 
     expected_total_count = counter.values.sum
 
@@ -19,10 +21,12 @@ describe DDSketch::CollapsingLowestDenseStore do
       # Does that make sense finding the max with -inf?
       min_storable_index = [-Float::INFINITY, max_index - store.bin_limit + 1].max
 
-      _counter = values.map { |v| [min_storable_index, v].max }.tally # rubocop:todo Lint/UnderscorePrefixedVariableName
+      storable_index_counter = values.map { |v| [min_storable_index, v].max }.each_with_object(Hash.new(0)) do |v, hash|
+        hash[v] += 1
+      end
 
       store.bins.each_with_index do |bin, index|
-        expect(bin).to eq(_counter.fetch(index + store.offset)) if bin != 0
+        expect(bin).to eq(storable_index_counter.fetch(index + store.offset)) if bin != 0
       end
     end
   end

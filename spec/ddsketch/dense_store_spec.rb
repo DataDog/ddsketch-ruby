@@ -2,7 +2,9 @@
 
 describe DDSketch::DenseStore do
   def _test_values(store, values)
-    counter = values.tally
+    counter = values.each_with_object(Hash.new(0)) do |v, hash|
+      hash[v] += 1
+    end
     expected_total_count = counter.values.sum
 
     expect(expected_total_count).to eq(store.bins.sum)

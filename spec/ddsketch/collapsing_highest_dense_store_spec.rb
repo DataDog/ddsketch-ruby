@@ -5,7 +5,9 @@ describe DDSketch::CollapsingHighestDenseStore do
   extreme_min = -extreme_max - 1
 
   def _test_values(store, values)
-    counter = values.tally
+    counter = values.each_with_object(Hash.new(0)) do |v, hash|
+      hash[v] += 1
+    end
 
     expected_total_count = counter.values.sum
 
@@ -20,7 +22,9 @@ describe DDSketch::CollapsingHighestDenseStore do
       # Does that make sense finding the max with -inf?
       max_storable_index = [Float::INFINITY, min_index + store.bin_limit - 1].min
 
-      counter = values.map { |v| [max_storable_index, v].min }.tally
+      counter = values.map { |v| [max_storable_index, v].min }.each_with_object(Hash.new(0)) do |v, hash|
+        hash[v] += 1
+      end
 
       store.bins.each_with_index do |bin, index|
         expect(bin).to eq(counter.fetch(index + store.offset)) if bin != 0

@@ -69,7 +69,9 @@ shared_examples 'test sketch' do |*args|
     sketch = described_class.new(*args)
 
     dataset = Integers.new(1000)
-    counter = dataset.data.tally
+    counter = dataset.data.each_with_object(Hash.new(0)) do |v, hash|
+      hash[v] += 1
+    end
 
     counter.each do |value, count|
       sketch.add(value, count)
