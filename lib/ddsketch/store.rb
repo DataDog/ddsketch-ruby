@@ -115,7 +115,7 @@ module DDSketch
     def _shift_bins(shift)
       if shift > 0
         self.bins = bins[0...-shift]
-        bins.prepend(*([0.0] * shift))
+        bins.unshift(*([0.0] * shift))
       else
         self.bins = bins[(shift.abs)..-1]
         bins.append(*([0.0] * shift.abs))
