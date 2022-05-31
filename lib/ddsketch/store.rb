@@ -98,7 +98,7 @@ module DDSketch
       else
         # grow the bins
         new_length = _get_new_length(new_min_key, new_max_key)
-        bins.append(*([0.0] * (new_length - length))) if new_length > length
+        bins.push(*([0.0] * (new_length - length))) if new_length > length
         _adjust(new_min_key, new_max_key)
       end
     end
@@ -118,7 +118,7 @@ module DDSketch
         bins.unshift(*([0.0] * shift))
       else
         self.bins = bins[(shift.abs)..-1]
-        bins.append(*([0.0] * shift.abs))
+        bins.push(*([0.0] * shift.abs))
       end
       self.offset -= shift
     end

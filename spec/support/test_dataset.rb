@@ -53,7 +53,7 @@ class EmptyDataset < TestDataset
 
   def add(val)
     @size += 1
-    data.append(val)
+    data.push(val)
   end
 end
 
