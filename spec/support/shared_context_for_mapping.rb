@@ -50,9 +50,9 @@ shared_context 'mapping tests' do
     rel_acc = 1 - 1e-3
 
     while rel_acc >= min_rel_acc
-      rel_acc.tap do |relative_acccuracy| # Create closure to ensure relative_acccuracy is different for each example
-        context "with accuracy #{relative_acccuracy}" do
-          let(:relative_acccuracy) { relative_acccuracy }
+      rel_acc.tap do |relative_accuracy| # Create closure to ensure relative_accuracy is different for each example
+        context "with accuracy #{relative_accuracy}" do
+          let(:relative_accuracy) { relative_accuracy }
 
           it 'test accuracy' do
             max_rel_acc = test_value_rel_acc(mapping)
@@ -65,7 +65,7 @@ shared_context 'mapping tests' do
   end
 
   begin
-    let(:relative_acccuracy) { 0.01 }
+    let(:relative_accuracy) { 0.01 }
 
     [0, 1, -12.23, 7768.3].each do |offset|
       context "with offset #{offset}" do

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-describe DDSketch::DenseStore do
+describe Datadog::DDSketch::DenseStore do
   def _test_values(store, values)
     counter = values.each_with_object(Hash.new(0)) do |v, hash|
       hash[v] += 1
@@ -38,10 +38,10 @@ describe DDSketch::DenseStore do
   end
 
   def _test_merging(list_values)
-    store = DDSketch::DenseStore.new
+    store = described_class.new
 
     list_values.each do |values|
-      intermediate_store = DDSketch::DenseStore.new
+      intermediate_store = described_class.new
 
       values.each do |v|
         intermediate_store.add(v)

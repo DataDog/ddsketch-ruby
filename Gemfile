@@ -10,4 +10,5 @@ group :test do
   gem 'rspec_junit_formatter'
   gem 'rubocop', require: false
   gem 'simplecov', require: false
+  gem 'pry'
 end

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-shared_examples 'test sketch' do |*args|
+shared_examples 'test sketch' do |args|
   def test_quantiles
     [0, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.99, 0.999, 1].freeze
   end
@@ -43,30 +43,30 @@ shared_examples 'test sketch' do |*args|
     datasets.each do |dataset_klass|
       test_sizes.each do |size|
         dataset = dataset_klass.new(size)
-        sketch = described_class.new(*args)
+        sketch = described_class.new(**args)
 
         dataset.data.each do |value|
           sketch.add(value)
         end
 
-        _evaluate_sketch_accuracy(sketch, dataset, args[0])
+        _evaluate_sketch_accuracy(sketch, dataset, args[:relative_accuracy])
       end
     end
 
     [Exponential, Lognormal, Bimodal, Mixed, Trimodal].each do |dataset_klass|
       dataset = dataset_klass.new
-      sketch = described_class.new(*args)
+      sketch = described_class.new(**args)
 
       dataset.data.each do |value|
         sketch.add(value)
       end
 
-      _evaluate_sketch_accuracy(sketch, dataset, args[0])
+      _evaluate_sketch_accuracy(sketch, dataset, args[:relative_accuracy])
     end
   end
 
   it 'test_add_multiple' do
-    sketch = described_class.new(*args)
+    sketch = described_class.new(**args)
 
     dataset = Integers.new(1000)
     counter = dataset.data.each_with_object(Hash.new(0)) do |v, hash|
@@ -77,11 +77,11 @@ shared_examples 'test sketch' do |*args|
       sketch.add(value, count)
     end
 
-    _evaluate_sketch_accuracy(sketch, dataset, args[0])
+    _evaluate_sketch_accuracy(sketch, dataset, args[:relative_accuracy])
   end
 
   it 'test_add_decimal' do
-    sketch = described_class.new(*args)
+    sketch = described_class.new(**args)
 
     (0...100).each do |value|
       sketch.add(value, 1.1)
@@ -93,7 +93,7 @@ shared_examples 'test sketch' do |*args|
     sketch_median = sketch.get_quantile_value(0.5)
     err = (sketch_median - data_median).abs
 
-    expect(err - args[0] * data_median.abs).to be <= 1e-15
+    expect(err - args[:relative_accuracy] * data_median.abs).to be <= 1e-15
 
     expect(sketch.count).to be_within(1e-3).of(110 * 2)
     expect(sketch.sum).to be_within(1e-3).of(5445 + 11000)
@@ -105,11 +105,11 @@ shared_examples 'test sketch' do |*args|
     # for size in test_sizes:
     test_sizes.each do |size|
       dataset = EmptyDataset.new(0)
-      target_sketch = described_class.new(*args)
+      target_sketch = described_class.new(**args)
 
       parameters.each do |params|
         generator = Normal.new(size, params[0], params[1])
-        sketch = described_class.new(*args)
+        sketch = described_class.new(**args)
 
         generator.data.each do |value|
           sketch.add(value)
@@ -118,15 +118,15 @@ shared_examples 'test sketch' do |*args|
 
         target_sketch.merge(sketch)
 
-        _evaluate_sketch_accuracy(target_sketch, dataset, args[0])
+        _evaluate_sketch_accuracy(target_sketch, dataset, args[:relative_accuracy])
       end
     end
   end
 
   it 'test_merge_unequal' do
     dataset = Lognormal.new
-    sketch1 = described_class.new(*args)
-    sketch2 = described_class.new(*args)
+    sketch1 = described_class.new(**args)
+    sketch2 = described_class.new(**args)
 
     rng = Random.new
     dataset.data.each do |value|
@@ -139,12 +139,12 @@ shared_examples 'test sketch' do |*args|
 
     sketch1.merge(sketch2)
 
-    _evaluate_sketch_accuracy(sketch1, dataset, args[0])
+    _evaluate_sketch_accuracy(sketch1, dataset, args[:relative_accuracy])
   end
 
   it 'test_merge_mixed' do
     merged_dataset = EmptyDataset.new(0)
-    merged_sketch = described_class.new(*args)
+    merged_sketch = described_class.new(**args)
 
     [
       Normal.new(100),
@@ -152,7 +152,7 @@ shared_examples 'test sketch' do |*args|
       Laplace.new,
       Bimodal.new
     ].each do |dataset|
-      sketch = described_class.new(*args)
+      sketch = described_class.new(**args)
 
       dataset.data.each do |value|
         sketch.add(value)
@@ -162,12 +162,12 @@ shared_examples 'test sketch' do |*args|
       merged_sketch.merge(sketch)
     end
 
-    _evaluate_sketch_accuracy(merged_sketch, merged_dataset, args[0])
+    _evaluate_sketch_accuracy(merged_sketch, merged_dataset, args[:relative_accuracy])
   end
 
   it 'test_consistent_merge' do
-    sketch1 = described_class.new(*args)
-    sketch2 = described_class.new(*args)
+    sketch1 = described_class.new(**args)
+    sketch2 = described_class.new(**args)
 
     rng = Distribution::Normal.rng(37.4, 1.0)
 
@@ -202,7 +202,7 @@ shared_examples 'test sketch' do |*args|
     expect(sketch2.avg).to be_within(1e-3).of(sketch2_values[1])
     expect(sketch2.num_values).to be_within(1e-3).of(sketch2_values[2])
 
-    sketch3 = described_class.new(*args)
+    sketch3 = described_class.new(**args)
     sketch3.merge(sketch2)
 
     # merging to an empty sketch does not change sketch2

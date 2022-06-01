@@ -119,9 +119,9 @@ orbs:
           - *step_compute_bundle_checksum
           - restore_cache:
               keys:
-                - bundle-{{ .Environment.CIRCLE_CACHE_VERSION }}-<<parameters.ruby_version>>-{{ checksum "lib/ddsketch/version.rb" }}-{{ .Branch }}-{{ checksum ".circleci/bundle_checksum" }}
-                - bundle-{{ .Environment.CIRCLE_CACHE_VERSION }}-<<parameters.ruby_version>>-{{ checksum "lib/ddsketch/version.rb" }}-{{ .Branch }}-
-                - bundle-{{ .Environment.CIRCLE_CACHE_VERSION }}-<<parameters.ruby_version>>-{{ checksum "lib/ddsketch/version.rb" }}
+                - bundle-{{ .Environment.CIRCLE_CACHE_VERSION }}-<<parameters.ruby_version>>-{{ checksum "lib/datadog/ddsketch/version.rb" }}-{{ .Branch }}-{{ checksum ".circleci/bundle_checksum" }}
+                - bundle-{{ .Environment.CIRCLE_CACHE_VERSION }}-<<parameters.ruby_version>>-{{ checksum "lib/datadog/ddsketch/version.rb" }}-{{ .Branch }}-
+                - bundle-{{ .Environment.CIRCLE_CACHE_VERSION }}-<<parameters.ruby_version>>-{{ checksum "lib/datadog/ddsketch/version.rb" }}
           - *check_exact_bundle_cache_hit
           - *step_bundle_install
           - *save_bundle_checksum
@@ -130,7 +130,7 @@ orbs:
               paths:
                 - /app
           - save_cache:
-              key: bundle-{{ .Environment.CIRCLE_CACHE_VERSION }}-<<parameters.ruby_version>>-{{ checksum "lib/ddsketch/version.rb" }}-{{ .Branch }}-{{ checksum ".circleci/bundle_checksum" }}
+              key: bundle-{{ .Environment.CIRCLE_CACHE_VERSION }}-<<parameters.ruby_version>>-{{ checksum "lib/datadog/ddsketch/version.rb" }}-{{ .Branch }}-{{ checksum ".circleci/bundle_checksum" }}
               paths:
                 - /usr/local/bundle
       test:
@@ -144,7 +144,7 @@ orbs:
                 - '{{ .Environment.CIRCLE_CACHE_VERSION }}-bundled-repo-<<parameters.ruby_version>>-{{ .Environment.CIRCLE_SHA1 }}'
           - restore_cache:
               keys:
-                - bundle-{{ .Environment.CIRCLE_CACHE_VERSION }}-<<parameters.ruby_version>>-{{ checksum "lib/ddsketch/version.rb" }}-{{ .Branch }}-{{ checksum ".circleci/bundle_checksum" }}
+                - bundle-{{ .Environment.CIRCLE_CACHE_VERSION }}-<<parameters.ruby_version>>-{{ checksum "lib/datadog/ddsketch/version.rb" }}-{{ .Branch }}-{{ checksum ".circleci/bundle_checksum" }}
           - run:
               name: Set coverage report directory
               command: |
@@ -165,7 +165,7 @@ orbs:
       #           - '{{ .Environment.CIRCLE_CACHE_VERSION }}-bundled-repo-<<parameters.ruby_version>>-{{ .Environment.CIRCLE_SHA1 }}'
       #     - restore_cache:
       #         keys:
-      #           - bundle-{{ .Environment.CIRCLE_CACHE_VERSION }}-<<parameters.ruby_version>>-{{ checksum "lib/ddsketch/version.rb" }}-{{ .Branch }}-{{ checksum ".circleci/bundle_checksum" }}
+      #           - bundle-{{ .Environment.CIRCLE_CACHE_VERSION }}-<<parameters.ruby_version>>-{{ checksum "lib/datadog/ddsketch/version.rb" }}-{{ .Branch }}-{{ checksum ".circleci/bundle_checksum" }}
       #     - *step_rubocop
       # coverage:
       #   <<: *test_job_default
@@ -175,7 +175,7 @@ orbs:
       #           - '{{ .Environment.CIRCLE_CACHE_VERSION }}-bundled-repo-<<parameters.ruby_version>>-{{ .Environment.CIRCLE_SHA1 }}'
       #     - restore_cache:
       #         keys:
-      #           - bundle-{{ .Environment.CIRCLE_CACHE_VERSION }}-<<parameters.ruby_version>>-{{ checksum "lib/ddsketch/version.rb" }}-{{ .Branch }}-{{ checksum ".circleci/bundle_checksum" }}
+      #           - bundle-{{ .Environment.CIRCLE_CACHE_VERSION }}-<<parameters.ruby_version>>-{{ checksum "lib/datadog/ddsketch/version.rb" }}-{{ .Branch }}-{{ checksum ".circleci/bundle_checksum" }}
       #     - attach_workspace:
       #         at: /tmp/workspace
       #     - run:

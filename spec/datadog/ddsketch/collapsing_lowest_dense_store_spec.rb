@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-describe DDSketch::CollapsingHighestDenseStore do
+describe Datadog::DDSketch::CollapsingLowestDenseStore do
   extreme_max = 9223372036854775807
   extreme_min = -extreme_max - 1
 
@@ -16,25 +16,24 @@ describe DDSketch::CollapsingHighestDenseStore do
     if expected_total_count == 0
       expect(store.bins).to all(eq(0))
     else
-      # Does at least one non-zero assertion make sense?
-      min_index = counter.keys.min
+      max_index = counter.keys.max
 
       # Does that make sense finding the max with -inf?
-      max_storable_index = [Float::INFINITY, min_index + store.bin_limit - 1].min
+      min_storable_index = [-Float::INFINITY, max_index - store.bin_limit + 1].max
 
-      counter = values.map { |v| [max_storable_index, v].min }.each_with_object(Hash.new(0)) do |v, hash|
+      storable_index_counter = values.map { |v| [min_storable_index, v].max }.each_with_object(Hash.new(0)) do |v, hash|
         hash[v] += 1
       end
 
       store.bins.each_with_index do |bin, index|
-        expect(bin).to eq(counter.fetch(index + store.offset)) if bin != 0
+        expect(bin).to eq(storable_index_counter.fetch(index + store.offset)) if bin != 0
       end
     end
   end
 
   def _test_store(values)
     [1, 20, 1000].each do |bin_limit|
-      store = described_class.new(bin_limit)
+      store = described_class.new(bin_limit: bin_limit)
 
       values.each do |val|
         store.add(val)
@@ -46,10 +45,10 @@ describe DDSketch::CollapsingHighestDenseStore do
 
   def _test_merging(list_values)
     [1, 20, 1000].each do |bin_limit|
-      store = described_class.new(bin_limit)
+      store = described_class.new(bin_limit: bin_limit)
 
       list_values.each do |values|
-        intermediate_store = described_class.new(bin_limit)
+        intermediate_store = described_class.new(bin_limit: bin_limit)
 
         values.each do |val|
           intermediate_store.add(val)
@@ -107,5 +106,24 @@ describe DDSketch::CollapsingHighestDenseStore do
     it do
       _test_merging(list_values)
     end
+  end
+
+  it 'Test copying empty stores' do
+    store = described_class.new(bin_limit: 10)
+
+    store.copy(described_class.new(bin_limit: 10))
+
+    expect(store.count).to eq(0)
+  end
+
+  it 'Test copying stores' do
+    store = described_class.new(bin_limit: 10)
+    new_store = described_class.new(bin_limit: 10)
+
+    new_store.add(0)
+
+    store.copy(new_store)
+
+    expect(store.count).to eq(1)
   end
 end
