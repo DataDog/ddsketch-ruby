@@ -233,21 +233,16 @@ job_configuration:
     <<: *filters_all_branches_and_tags
     ruby_version: '3.1'
     image: ivoanjo/docker-library:ddtrace_rb_3_1_1
-  - &config-jruby-9_2_8_0 # Test with older 9.2 release because 9.2.9.0 changed behavior, see https://github.com/DataDog/dd-trace-rb/pull/1409
-    <<: *filters_all_branches_and_tags
-    ruby_version: 'jruby-9.2.8.0'
-    image: ivoanjo/docker-library:ddtrace_rb_jruby_9_2_8_0
-    resource_class_to_use: medium+
-  - &config-jruby-9_2-latest # More recent release of 9.2
-    <<: *filters_all_branches_and_tags
-    ruby_version: 'jruby-9.2-latest'
-    image: ivoanjo/docker-library:ddtrace_rb_jruby_9_2_18_0
-    resource_class_to_use: medium+
-  - &config-jruby-9_3-latest
-    <<: *filters_all_branches_and_tags
-    ruby_version: 'jruby-9.3-latest'
-    image: ivoanjo/docker-library:ddtrace_rb_jruby_9_3_4_0
-    resource_class_to_use: medium+
+  # - &config-jruby-9_2-latest # More recent release of 9.2
+  #   <<: *filters_all_branches_and_tags
+  #   ruby_version: 'jruby-9.2-latest'
+  #   image: ivoanjo/docker-library:ddtrace_rb_jruby_9_2_18_0
+  #   resource_class_to_use: medium+
+  # - &config-jruby-9_3-latest
+  #   <<: *filters_all_branches_and_tags
+  #   ruby_version: 'jruby-9.3-latest'
+  #   image: ivoanjo/docker-library:ddtrace_rb_jruby_9_3_4_0
+  #   resource_class_to_use: medium+
 
 workflows:
   version: 2
@@ -356,27 +351,19 @@ workflows:
           name: test-3.1
           requires:
             - build-3.1
-      - orb/build:
-          <<: *config-jruby-9_2_8_0
-          name: build-jruby-9.2.8.0
-      - orb/test:
-          <<: *config-jruby-9_2_8_0
-          name: test-jruby-9.2.8.0
-          requires:
-            - build-jruby-9.2.8.0
-      - orb/build:
-          <<: *config-jruby-9_2-latest
-          name: build-jruby-9.2-latest
-      - orb/test:
-          <<: *config-jruby-9_2-latest
-          name: test-jruby-9.2-latest
-          requires:
-            - build-jruby-9.2-latest
-      - orb/build:
-          <<: *config-jruby-9_3-latest
-          name: build-jruby-9.3-latest
-      - orb/test:
-          <<: *config-jruby-9_3-latest
-          name: test-jruby-9.3-latest
-          requires:
-            - build-jruby-9.3-latest
+      # - orb/build:
+      #     <<: *config-jruby-9_2-latest
+      #     name: build-jruby-9.2-latest
+      # - orb/test:
+      #     <<: *config-jruby-9_2-latest
+      #     name: test-jruby-9.2-latest
+      #     requires:
+      #       - build-jruby-9.2-latest
+      # - orb/build:
+      #     <<: *config-jruby-9_3-latest
+      #     name: build-jruby-9.3-latest
+      # - orb/test:
+      #     <<: *config-jruby-9_3-latest
+      #     name: test-jruby-9.3-latest
+      #     requires:
+      #       - build-jruby-9.3-latest

@@ -96,6 +96,8 @@ module DDSketch
       exponent = Integer(value.floor + 1)
       mantissa = (value - exponent + 2) / 2.0
 
+      # JRuby has inconsistent result with `Math.ldexp`
+      # https://github.com/jruby/jruby/issues/7234
       Math.ldexp(mantissa, exponent)
     end
 
@@ -149,6 +151,9 @@ module DDSketch
         -(B + cardano + delta_0 / cardano) / (3.0 * A) + 1.0
       )
       mantissa = significand_plus_one / 2
+
+      # JRuby has inconsistent result with `Math.ldexp`
+      # https://github.com/jruby/jruby/issues/7234
       Math.ldexp(mantissa, exponent + 1)
     end
 
