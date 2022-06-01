@@ -33,7 +33,7 @@ describe DDSketch::CollapsingHighestDenseStore do
   end
 
   def _test_store(values)
-    [20].each do |bin_limit|
+    [1, 20, 1000].each do |bin_limit|
       store = described_class.new(bin_limit)
 
       values.each do |val|
