@@ -5,9 +5,9 @@ describe DDSketch::DenseStore do
     counter = values.each_with_object(Hash.new(0)) do |v, hash|
       hash[v] += 1
     end
-    expected_total_count = counter.values.sum
+    expected_total_count = counter.values.inject(:+) || 0
 
-    expect(expected_total_count).to eq(store.bins.sum)
+    expect(expected_total_count).to eq(store.bins.inject(:+) || 0)
 
     if expected_total_count == 0
       expect(store.bins).to all(eq(0))

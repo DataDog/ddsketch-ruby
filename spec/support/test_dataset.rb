@@ -15,7 +15,7 @@ class TestDataset
   end
 
   def sum
-    @data.sum
+    @data.inject(:+) || 0
   end
 
   def length

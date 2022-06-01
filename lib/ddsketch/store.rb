@@ -221,7 +221,7 @@ module DDSketch
           if shift < 0
             collapse_start_index = min_key - self.offset
             collapse_end_index = new_min_key - self.offset
-            collapsed_count = bins[collapse_start_index...collapse_end_index].sum
+            collapsed_count = bins[collapse_start_index...collapse_end_index].inject(:+) || 0
 
             bins[collapse_start_index...collapse_end_index] = [0.0] * (new_min_key - min_key)
             bins[collapse_end_index] += collapsed_count
@@ -253,7 +253,7 @@ module DDSketch
       collapse_start_idx = store.min_key - store.offset
       collapse_end_idx = [min_key, store.max_key + 1].min - store.offset
       if collapse_end_idx > collapse_start_idx
-        collapse_count = store.bins[collapse_start_idx...collapse_end_idx].sum
+        collapse_count = store.bins[collapse_start_idx...collapse_end_idx].inject(:+) || 0
         bins[0] += collapse_count
       else
         collapse_end_idx = collapse_start_idx
@@ -327,7 +327,7 @@ module DDSketch
           if shift > 0
             collapse_start_index = new_max_key - self.offset + 1
             collapse_end_index = max_key - self.offset + 1
-            collapsed_count = bins[collapse_start_index...collapse_end_index].sum
+            collapsed_count = bins[collapse_start_index...collapse_end_index].inject(:+) || 0
 
             bins[collapse_start_index...collapse_end_index] = [0.0] * (max_key - new_max_key)
             bins[collapse_start_index - 1] += collapsed_count
@@ -359,7 +359,7 @@ module DDSketch
       collapse_end_idx = store.max_key - store.offset + 1
       collapse_start_idx = [max_key + 1, store.min_key].max - store.offset
       if collapse_end_idx > collapse_start_idx
-        collapse_count = store.bins[collapse_start_idx...collapse_end_idx].sum
+        collapse_count = store.bins[collapse_start_idx...collapse_end_idx].inject(:+) || 0
         bins[-1] += collapse_count
       else
         collapse_start_idx = collapse_end_idx
