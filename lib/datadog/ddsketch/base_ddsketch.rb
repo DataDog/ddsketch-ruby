@@ -63,9 +63,7 @@ module Datadog
 
       # Add a value to the sketch.
       def add(val, weight = 1.0)
-        if weight <= 0.0
-          raise InvalidArgumentException, 'weight must be positive'
-        end
+        raise InvalidArgumentException, 'weight must be positive' if weight <= 0.0
 
         if val > @mapping.min_possible
           @store.add(@mapping.key(val), weight)

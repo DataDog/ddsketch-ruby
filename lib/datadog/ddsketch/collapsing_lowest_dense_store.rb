@@ -88,7 +88,7 @@ module Datadog
       def merge(store)
         return if store.count == 0
 
-        if self.count == 0
+        if count == 0
           copy(store)
           return
         end

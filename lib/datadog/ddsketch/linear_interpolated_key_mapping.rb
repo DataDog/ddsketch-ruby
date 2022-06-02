@@ -7,7 +7,6 @@ module Datadog
     # base 2 from the binary representations of floating-point values and
     # linearly interpolating the logarithm in-between.
     class LinearlyInterpolatedKeyMapping < KeyMapping
-
       # Approximates log2 by s + f
       # where v = (s+1) * 2 ** f  for s in [0, 1)
 
