@@ -2,6 +2,7 @@
 
 require 'distribution'
 
+# This file contains test data generated from Python's NumPy
 class TestDataset
   attr_reader :size, :data
 

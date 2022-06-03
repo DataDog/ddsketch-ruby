@@ -2,19 +2,16 @@
 
 shared_context 'mapping tests' do
   def relative_error(expected_min, expected_max, actual)
-    raise if (expected_min < 0) || (expected_max < 0) || (actual < 0)
-    return 0.0 if (expected_min <= actual) && (actual <= expected_max)
+    # raise if (expected_min < 0) || (expected_max < 0) || (actual < 0)
+    # if (expected_min <= actual) && (actual <= expected_max)
+    #   return 0.0
+    # end
 
-    if (expected_min == 0) && (expected_max == 0)
-      if actual == 0
-        return 0.0
-      else
-        Float::INFINITY
-      end
+    if actual < expected_min
+      (expected_min - actual) / expected_min
+    else
+      (actual - expected_max) / expected_max
     end
-    return (expected_min - actual) / expected_min if actual < expected_min
-
-    (actual - expected_max) / expected_max
   end
 
   # Calculate the relative accuracy of a mapping on a large range of values
@@ -22,11 +19,14 @@ shared_context 'mapping tests' do
     value_mult = 2 - Math.sqrt(2) * 1e-1
     max_relative_acc = 0.0
     value = mapping.min_possible
+
     while value < mapping.max_possible / value_mult
       value *= value_mult
       map_val = mapping.value(mapping.key(value))
       rel_err = relative_error(value, value, map_val)
+
       expect(rel_err).to be < mapping.relative_accuracy
+
       max_relative_acc = [max_relative_acc, rel_err].max
     end
 
