@@ -1,4 +1,4 @@
-describe Datadog::DDSketch::LinearlyInterpolatedKeyMapping do
+describe Datadog::DDSketch::Mapping::LinearlyInterpolatedKeyMapping do
   before { skip 'Skipping `Math.ldexp` is inconsistent between JRuby & MRI' if RUBY_PLATFORM == 'java' }
 
   include_context 'mapping tests' do

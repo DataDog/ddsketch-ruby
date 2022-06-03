@@ -7,8 +7,5 @@ module Datadog
 
     class InvalidSketchMergeError < BaseError
     end
-
-    class InvalidArgumentException < BaseError
-    end
   end
 end

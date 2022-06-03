@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-describe Datadog::DDSketch::DenseStore do
+describe Datadog::DDSketch::Store::DenseStore do
   def _test_values(store, values)
     counter = values.each_with_object(Hash.new(0)) do |v, hash|
       hash[v] += 1

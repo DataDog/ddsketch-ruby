@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-describe Datadog::DDSketch::CollapsingLowestDenseStore do
+describe Datadog::DDSketch::Store::CollapsingLowestDenseStore do
   extreme_max = 9223372036854775807
   extreme_min = -extreme_max - 1
 

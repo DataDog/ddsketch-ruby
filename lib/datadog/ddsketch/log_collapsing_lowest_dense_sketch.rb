@@ -15,9 +15,9 @@ module Datadog
         bin_limit: DEFAULT_BIN_LIMIT
       )
         super(
-          mapping: LogarithmicKeyMapping.new(relative_accuracy: relative_accuracy),
-          store: CollapsingLowestDenseStore.new(bin_limit: bin_limit),
-          negative_store: CollapsingLowestDenseStore.new(bin_limit: bin_limit)
+          mapping: Mapping::LogarithmicKeyMapping.new(relative_accuracy: relative_accuracy),
+          store: Store::CollapsingLowestDenseStore.new(bin_limit: bin_limit),
+          negative_store: Store::CollapsingLowestDenseStore.new(bin_limit: bin_limit)
         )
       end
     end
