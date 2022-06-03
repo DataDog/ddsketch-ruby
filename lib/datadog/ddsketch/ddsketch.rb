@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-# version
 require 'datadog/ddsketch/version'
+require 'datadog/ddsketch/errors'
 
 # sketchs
 require 'datadog/ddsketch/base_ddsketch'

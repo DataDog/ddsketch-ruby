@@ -118,6 +118,7 @@ module Datadog
             return i + offset if (lower && running_ct > rank) || (!lower && running_ct >= rank + 1)
           end
 
+          # Never here....??
           max_key
         end
 

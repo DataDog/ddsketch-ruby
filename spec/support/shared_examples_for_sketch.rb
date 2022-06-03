@@ -101,6 +101,16 @@ shared_examples 'test sketch' do |args|
         expect(sketch.sum).to be_within(1e-3).of(5445 + 11000)
         expect(sketch.avg).to be_within(1e-3).of(74.75)
       end
+
+      context 'when given weight is smaller or equal to zero' do
+        it do
+          sketch = described_class.new(**args)
+
+          expect do
+            sketch.add(0, 0)
+          end.to raise_error(ArgumentError, /must be positive/)
+        end
+      end
     end
   end
 
@@ -133,109 +143,121 @@ shared_examples 'test sketch' do |args|
           end
         end
       end
+    end
 
-      it 'test_merge_unequal' do
-        distribution = Lognormal.new
-        sketch = described_class.new(**args)
+    it 'test_merge_unequal' do
+      distribution = Lognormal.new
+      sketch = described_class.new(**args)
+      other = described_class.new(**args)
+
+      rng = Random.new
+
+      distribution.data.each do |value|
+        if rng.rand > 0.7
+          sketch.add(value)
+        else
+          other.add(value)
+        end
+      end
+
+      sketch.merge(other)
+
+      expect(sketch.num_values).to eq(distribution.size)
+      expect(sketch.sum).to be_within(1e-3).of(distribution.sum)
+      expect(sketch.avg).to be_within(1e-3).of(distribution.avg)
+
+      test_quantiles.each do |q|
+        expect(sketch).to guarantee_accuracy(distribution, args[:relative_accuracy]).at_quantile(q)
+      end
+    end
+
+    it 'test_merge_mixed' do
+      distribution = EmptyDataset.new(0)
+      sketch = described_class.new(**args)
+
+      [
+        Normal.new(100),
+        Exponential.new,
+        Laplace.new,
+        Bimodal.new
+      ].each do |other_distribution|
         other = described_class.new(**args)
 
-        rng = Random.new
-
-        distribution.data.each do |value|
-          if rng.rand > 0.7
-            sketch.add(value)
-          else
-            other.add(value)
-          end
+        other_distribution.data.each do |value|
+          sketch.add(value)
+          distribution.add(value)
         end
 
         sketch.merge(other)
-
-        expect(sketch.num_values).to eq(distribution.size)
-        expect(sketch.sum).to be_within(1e-3).of(distribution.sum)
-        expect(sketch.avg).to be_within(1e-3).of(distribution.avg)
-
-        test_quantiles.each do |q|
-          expect(sketch).to guarantee_accuracy(distribution, args[:relative_accuracy]).at_quantile(q)
-        end
       end
 
-      it 'test_merge_mixed' do
-        distribution = EmptyDataset.new(0)
-        sketch = described_class.new(**args)
+      expect(sketch.num_values).to eq(distribution.size)
+      expect(sketch.sum).to be_within(1e-3).of(distribution.sum)
+      expect(sketch.avg).to be_within(1e-3).of(distribution.avg)
 
-        [
-          Normal.new(100),
-          Exponential.new,
-          Laplace.new,
-          Bimodal.new
-        ].each do |other_distribution|
-          other = described_class.new(**args)
+      test_quantiles.each do |q|
+        expect(sketch).to guarantee_accuracy(distribution, args[:relative_accuracy]).at_quantile(q)
+      end
+    end
 
-          other_distribution.data.each do |value|
-            sketch.add(value)
-            distribution.add(value)
-          end
+    it 'test_consistent_merge' do
+      sketch1 = described_class.new(**args)
+      sketch2 = described_class.new(**args)
 
-          sketch.merge(other)
-        end
+      rng = Distribution::Normal.rng(37.4, 1.0)
 
-        expect(sketch.num_values).to eq(distribution.size)
-        expect(sketch.sum).to be_within(1e-3).of(distribution.sum)
-        expect(sketch.avg).to be_within(1e-3).of(distribution.avg)
-
-        test_quantiles.each do |q|
-          expect(sketch).to guarantee_accuracy(distribution, args[:relative_accuracy]).at_quantile(q)
-        end
+      Array.new(100) { rng.call }.each do |value|
+        sketch1.add(value)
       end
 
-      it 'test_consistent_merge' do
-        sketch1 = described_class.new(**args)
-        sketch2 = described_class.new(**args)
+      sketch1.merge(sketch2)
+      # sketch2 is still empty
+      expect(sketch2.num_values).to eq(0)
 
-        rng = Distribution::Normal.rng(37.4, 1.0)
+      Array.new(50) { rng.call }.each do |value|
+        sketch2.add(value)
+      end
 
-        Array.new(100) { rng.call }.each do |value|
-          sketch1.add(value)
-        end
+      sketch2_quantile_values = test_quantiles.map { |q| sketch2.get_quantile_value(q) }
+      sketch2_values = [sketch2.sum, sketch2.avg, sketch2.num_values]
 
-        sketch1.merge(sketch2)
-        # sketch2 is still empty
-        expect(sketch2.num_values).to eq(0)
+      sketch1.merge(sketch2)
 
-        Array.new(50) { rng.call }.each do |value|
-          sketch2.add(value)
-        end
+      #### missing spec
 
-        sketch2_quantile_values = test_quantiles.map { |q| sketch2.get_quantile_value(q) }
-        sketch2_values = [sketch2.sum, sketch2.avg, sketch2.num_values]
+      Array.new(100) { rng.call }.each do |value|
+        sketch1.add(value)
+      end
 
-        sketch1.merge(sketch2)
+      # changes to sketch1 does not affect sketch2 after merge
+      test_quantiles.each_with_index do |q, index|
+        expect(sketch2.get_quantile_value(q)).to be_within(1e-3).of(sketch2_quantile_values[index])
+      end
+      expect(sketch2.sum).to be_within(1e-3).of(sketch2_values[0])
+      expect(sketch2.avg).to be_within(1e-3).of(sketch2_values[1])
+      expect(sketch2.num_values).to be_within(1e-3).of(sketch2_values[2])
 
-        #### missing spec
+      sketch3 = described_class.new(**args)
+      sketch3.merge(sketch2)
 
-        Array.new(100) { rng.call }.each do |value|
-          sketch1.add(value)
-        end
+      # merging to an empty sketch does not change sketch2
+      test_quantiles.each_with_index do |q, index|
+        expect(sketch2.get_quantile_value(q)).to be_within(1e-3).of(sketch2_quantile_values[index])
+      end
+      expect(sketch2.sum).to be_within(1e-3).of(sketch2_values[0])
+      expect(sketch2.avg).to be_within(1e-3).of(sketch2_values[1])
+      expect(sketch2.num_values).to be_within(1e-3).of(sketch2_values[2])
+    end
 
-        # changes to sketch1 does not affect sketch2 after merge
-        test_quantiles.each_with_index do |q, index|
-          expect(sketch2.get_quantile_value(q)).to be_within(1e-3).of(sketch2_quantile_values[index])
-        end
-        expect(sketch2.sum).to be_within(1e-3).of(sketch2_values[0])
-        expect(sketch2.avg).to be_within(1e-3).of(sketch2_values[1])
-        expect(sketch2.num_values).to be_within(1e-3).of(sketch2_values[2])
+    context 'when two sketch with different gamma' do
+      it do
+        sketch = described_class.new(relative_accuracy: 0.1)
+        other = described_class.new(relative_accuracy: 0.2)
 
-        sketch3 = described_class.new(**args)
-        sketch3.merge(sketch2)
-
-        # merging to an empty sketch does not change sketch2
-        test_quantiles.each_with_index do |q, index|
-          expect(sketch2.get_quantile_value(q)).to be_within(1e-3).of(sketch2_quantile_values[index])
-        end
-        expect(sketch2.sum).to be_within(1e-3).of(sketch2_values[0])
-        expect(sketch2.avg).to be_within(1e-3).of(sketch2_values[1])
-        expect(sketch2.num_values).to be_within(1e-3).of(sketch2_values[2])
+        expect { sketch.merge(other) }.to raise_error(
+          Datadog::DDSketch::InvalidSketchMergeError,
+          'Cannot merge two sketches with different relative accuracy'
+        )
       end
     end
   end

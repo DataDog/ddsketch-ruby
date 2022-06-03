@@ -77,4 +77,22 @@ shared_context 'mapping tests' do
       end
     end
   end
+
+  describe '#initialize' do
+    context 'when given relative_accuracy larger than 1' do
+      it do
+        expect do
+          described_class.new(relative_accuracy: 1.1)
+        end.to raise_error(ArgumentError, /must be between 0 and 1/)
+      end
+    end
+
+    context 'when given relative_accuracy smaller than zero' do
+      it do
+        expect do
+          described_class.new(relative_accuracy: -0.1)
+        end.to raise_error(ArgumentError, /must be between 0 and 1/)
+      end
+    end
+  end
 end
