@@ -1,3 +1,3 @@
 # frozen_string_literal: true
-module DDSketch
-end
+
+require 'datadog/ddsketch'
