@@ -182,6 +182,7 @@ class Exponential < TestDataset # rubocop:todo Metrics/ClassLength
     super(1000)
   end
 
+  # The data is generated from Numpy by { np.random.exponential(scale=0.01, size=1000) }
   def populate # rubocop:todo Metrics/MethodLength
     [3.89548113e-03, 3.72411426e-04, 1.64659318e-02, 3.18718947e-02,
      7.17683705e-03, 4.67763463e-03, 2.64992998e-02, 1.21677579e-03,
@@ -443,6 +444,7 @@ class Lognormal < TestDataset # rubocop:todo Metrics/ClassLength
     super(1000)
   end
 
+  # The data is generated from Numpy by { np.random.lognormal(size=1000) / 100 }
   def populate # rubocop:todo Metrics/MethodLength
     [0.00799717, 0.00654048, 0.0030165, 0.00209251, 0.01624538,
      0.00521887, 0.00803425, 0.02299255, 0.00536431, 0.00712741,
@@ -665,6 +667,26 @@ class Bimodal < TestDataset
     super(1000)
   end
 
+  # The data is generated from Numpy with size of 1000
+
+  # class Bimodal(Dataset):
+
+  #   right_loc = 17.3
+  #   left_loc = -2.0
+  #   left_std = 3.0
+
+  #   @property
+  #   def name(self):
+  #       return "bimodal"
+
+  #   def populate(self):
+  #       return [next(self.generate()) for _ in range(int(self.size))]
+
+  #   def generate(self):
+  #       if np.random.random() > 0.5:
+  #           yield np.random.laplace(self.right_loc)
+  #       else:
+  #           yield np.random.normal(self.left_loc, self.left_std)
   def populate
     [17.265652730984268, 16.63330532833835, 16.03847326359458, -2.0942551258627633, -5.227526915172062,
      # rubocop:todo Layout/LineLength
@@ -678,6 +700,35 @@ class Mixed < TestDataset
     super(1000)
   end
 
+  # The data is generated from Numpy by with size of 1000
+
+  # class Mixed(Dataset):
+
+  #   mean = 0.0
+  #   sigma = 0.25
+  #   scale_factor = 0.1
+
+  #   loc = 10.0
+  #   scale = 0.5
+
+  #   def __init__(self, size, ratio=0.9, ignore_rank=False):
+  #       self.size = int(size)
+  #       self.ratio = ratio
+  #       self.data = self.populate()
+  #       self._ignore_rank = ignore_rank
+
+  #   @property
+  #   def name(self):
+  #       return "mixed"
+
+  #   def populate(self):
+  #       return [next(self.generate()) for _ in range(int(self.size))]
+
+  #   def generate(self):
+  #       if np.random.random() < self.ratio:
+  #           yield self.scale_factor * np.random.lognormal(self.mean, self.sigma)
+  #       else:
+  #           yield np.random.normal(self.loc, self.scale)
   def populate
     [0.10099272723865271, 0.13596703344393987, 0.08544972388261164, 0.08892881993232558, 0.10339494873054236,
      # rubocop:todo Layout/LineLength
@@ -691,6 +742,29 @@ class Trimodal < TestDataset
     super(1000)
   end
 
+  # The data is generated from Numpy with size of 1000
+
+  # class Trimodal(Dataset):
+
+  #   right_loc = 17.3
+  #   left_loc = 5.0
+  #   left_std = 0.5
+  #   exp_scale = 0.01
+
+  #   @property
+  #   def name(self):
+  #       return "trimodal"
+
+  #   def populate(self):
+  #       return [next(self.generate()) for _ in range(int(self.size))]
+
+  #   def generate(self):
+  #       if np.random.random() > 2.0 / 3.0:
+  #           yield np.random.laplace(self.right_loc)
+  #       elif np.random.random() > 1.0 / 3.0:
+  #           yield np.random.normal(self.left_loc, self.left_std)
+  #       else:
+  #           yield np.random.exponential(scale=self.exp_scale)
   def populate
     [15.644195981360705, 17.368107197491476, 5.242843595044977, 5.17763519953114, 16.13668333991126, 4.750271137676436,
      # rubocop:todo Layout/LineLength
