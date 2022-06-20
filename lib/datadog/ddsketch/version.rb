@@ -8,7 +8,9 @@ module Datadog
       PATCH = 0
       PRE = nil
 
-      STRING = [MAJOR, MINOR, PATCH, PRE].compact.join('.')
+      def self.to_s
+        [MAJOR, MINOR, PATCH, PRE].compact.join('.')
+      end
     end
   end
 end
