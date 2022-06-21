@@ -102,7 +102,7 @@ step_run_all_tests: &step_run_all_tests
 
 filters_all_branches_and_tags: &filters_all_branches_and_tags
   filters:
-    branches:
+    tags:
       only: /.*/
 
 orbs:
