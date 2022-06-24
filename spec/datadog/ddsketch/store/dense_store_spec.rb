@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 describe Datadog::DDSketch::Store::DenseStore do
+  it_behaves_like 'store protobuf'
+
   describe '#add' do
     [
       Array.new(100, 0),

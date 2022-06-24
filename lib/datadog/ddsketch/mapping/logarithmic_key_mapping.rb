@@ -15,6 +15,14 @@ module Datadog
           @multiplier *= Math.log(2)
         end
 
+        def to_proto
+          ::IndexMapping.new(
+            gamma: @relative_accuracy,
+            indexOffset: @offset,
+            interpolation: IndexMapping::Interpolation::NONE
+          )
+        end
+
         protected
 
         def log_gamma(value)

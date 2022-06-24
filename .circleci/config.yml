@@ -197,14 +197,14 @@ orbs:
 
 job_configuration:
   # MRI
-  - &config-2_1
-    <<: *filters_all_branches_and_tags
-    ruby_version: '2.1'
-    image: ivoanjo/docker-library:ddtrace_rb_2_1_10
-  - &config-2_2
-    <<: *filters_all_branches_and_tags
-    ruby_version: '2.2'
-    image: ivoanjo/docker-library:ddtrace_rb_2_2_10
+  # - &config-2_1
+  #   <<: *filters_all_branches_and_tags
+  #   ruby_version: '2.1'
+  #   image: ivoanjo/docker-library:ddtrace_rb_2_1_10
+  # - &config-2_2
+  #   <<: *filters_all_branches_and_tags
+  #   ruby_version: '2.2'
+  #   image: ivoanjo/docker-library:ddtrace_rb_2_2_10
   - &config-2_3
     <<: *filters_all_branches_and_tags
     ruby_version: '2.3'
@@ -279,22 +279,22 @@ workflows:
       #       - test-jruby-9.3-latest
       #       # soon™️ - test-truffleruby-21.0.0
       # MRI
-      - orb/build:
-          <<: *config-2_1
-          name: build-2.1
-      - orb/test:
-          <<: *config-2_1
-          name: test-2.1
-          requires:
-            - build-2.1
-      - orb/build:
-          <<: *config-2_2
-          name: build-2.2
-      - orb/test:
-          <<: *config-2_2
-          name: test-2.2
-          requires:
-            - build-2.2
+      # - orb/build:
+      #     <<: *config-2_1
+      #     name: build-2.1
+      # - orb/test:
+      #     <<: *config-2_1
+      #     name: test-2.1
+      #     requires:
+      #       - build-2.1
+      # - orb/build:
+      #     <<: *config-2_2
+      #     name: build-2.2
+      # - orb/test:
+      #     <<: *config-2_2
+      #     name: test-2.2
+      #     requires:
+      #       - build-2.2
       - orb/build:
           <<: *config-2_3
           name: build-2.3

@@ -24,6 +24,13 @@ module Datadog
           @bins = []
         end
 
+        def to_proto
+          ::Store.new(
+            contiguousBinCounts: @bins,
+            contiguousBinIndexOffset: @offset
+          )
+        end
+
         def copy(store)
           self.bins = store.bins.dup
           self.count = store.count

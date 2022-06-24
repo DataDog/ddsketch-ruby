@@ -48,6 +48,14 @@ module Datadog
           Math.ldexp(mantissa, exponent + 1)
         end
 
+        def to_proto
+          ::IndexMapping.new(
+            gamma: @relative_accuracy,
+            indexOffset: @offset,
+            interpolation: IndexMapping::Interpolation::CUBIC
+          )
+        end
+
         protected
 
         def log_gamma(value)
