@@ -32,18 +32,6 @@ Gem::Specification.new do |spec|
   # Uncomment to register a new dependency of your gem
   # spec.add_dependency "example-gem", "~> 1.0"
 
-  spec.add_development_dependency 'distribution'
-  # prime is required by distribution, as of Ruby 3.1, the prime gem is
-  # no longer distributed as a part of the standard library and must be
-  # bundled explicitly.
-  spec.add_development_dependency 'prime'
-  spec.add_development_dependency 'pry'
-  spec.add_development_dependency 'rake'
-  spec.add_development_dependency 'rspec'
-  spec.add_development_dependency 'rspec_junit_formatter'
-  spec.add_development_dependency 'rubocop'
-  spec.add_development_dependency 'simplecov'
-
   # For more information and examples about making a new gem, check out our
   # guide at: https://bundler.io/guides/creating_gem.html
 end
