@@ -1,5 +1,7 @@
 # sketches-ruby
 
+[![CircleCI](https://circleci.com/gh/DataDog/sketches-ruby/tree/main.svg?style=svg)](https://circleci.com/gh/DataDog/sketches-ruby/tree/main)
+
 This repo contains the Ruby implementation of a distributed quantile sketch algorithm [DDSketch](http://www.vldb.org/pvldb/vol12/p2195-masson.pdf).
 
 `DDSketch` has relative-error guarantees for any quantile q in [0, 1]. That is if the true value of the qth-quantile is `x` then `DDSketch` returns a value `y` such that `|x-y| / x < e` where `e` is the relative error parameter. `DDSketch` is also fully mergeable, meaning that multiple sketches from distributed systems can be combined in a central node.
