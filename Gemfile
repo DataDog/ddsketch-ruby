@@ -16,3 +16,5 @@ group :test do
   gem 'rubocop', require: false
   gem 'simplecov', require: false
 end
+
+gem 'google-protobuf'
