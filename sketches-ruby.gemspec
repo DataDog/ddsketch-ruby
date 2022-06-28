@@ -7,7 +7,7 @@ Gem::Specification.new do |spec|
   spec.email = ['dev@datadoghq.com']
 
   spec.summary = "Ruby implementations of the distributed quantile sketch algorithm DDSketch."
-  spec.description = "DDSketch has relative error guarantees: it computes quantiles with a controlled relative error. For instance, using DDSketch with a relative accuracy guarantee set to 1%, if the expected quantile value is 100, the computed quantile value is guaranteed to be between 99 and 101. If the expected quantile value is 1000, the computed quantile value is guaranteed to be between 990 and 1010."
+  spec.description = "DDSketch is a fast-to-insert, fully mergeable, space-efficient quantile sketch with relative error guarantees."
   # spec.homepage = "TODO: Put your gem's website or public repo URL here."
   spec.license = "Apache-2.0"
   spec.required_ruby_version = ">= 2.3"
