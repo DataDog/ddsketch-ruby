@@ -2,6 +2,8 @@
 
 source 'https://rubygems.org'
 
+gemspec
+
 group :test do
   gem 'distribution'
   # prime is required by distribution, as of Ruby 3.1, the prime gem is
