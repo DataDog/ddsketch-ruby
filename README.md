@@ -104,6 +104,22 @@ sketch_1.merge(sketch_2)
 sketch_1.get_quantile_value(1)
 ```
 
+### Protobuf Serialization
+
+`#to_proto` would return Protobuf object
+
+```ruby
+require 'datadog/ddsketch'
+
+sketch = Datadog::DDSketch::Sketch.new
+
+proto = sketch.to_proto
+=> <Datadog::DDSketch::Proto::DDSketch: mapping: <Datadog::DDSketch::Proto::IndexMapping: gamma: 0.01, indexOffset: 0.0, interpolation: :NONE>, positiveValues: <Datadog::DDSketch::Proto::Store: binCounts: {}, contiguousBinCounts: [], contiguousBinIndexOffset: 0>, negativeValues: <Datadog::DDSketch::Proto::Store: binCounts: {}, contiguousBinCounts: [], contiguousBinIndexOffset: 0>, zeroCount: 0.0>
+
+proto.to_h
+=> {:mapping=>{:gamma=>0.01, :indexOffset=>0.0, :interpolation=>:NONE}, :positiveValues=>{:binCounts=>{}, :contiguousBinCounts=>[], :contiguousBinIndexOffset=>0}, :negativeValues=>{:binCounts=>{}, :contiguousBinCounts=>[], :contiguousBinIndexOffset=>0}, :zeroCount=>0.0}
+```
+
 ## References
 
 * [DDSketch: A Fast and Fully-Mergeable Quantile Sketch with Relative-Error Guarantees](http://www.vldb.org/pvldb/vol12/p2195-masson.pdf). Charles Masson, Jee E. Rim and Homin K. Lee. 2019.

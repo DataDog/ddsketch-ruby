@@ -25,7 +25,7 @@ module Datadog
         end
 
         def to_proto
-          ::Store.new(
+          Proto::Store.new(
             contiguousBinCounts: @bins,
             contiguousBinIndexOffset: @offset
           )

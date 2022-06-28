@@ -31,10 +31,10 @@ module Datadog
         end
 
         def to_proto
-          ::IndexMapping.new(
+          Proto::IndexMapping.new(
             gamma: @relative_accuracy,
             indexOffset: @offset,
-            interpolation: IndexMapping::Interpolation::LINEAR
+            interpolation: Proto::IndexMapping::Interpolation::LINEAR
           )
         end
 

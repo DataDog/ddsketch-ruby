@@ -20,7 +20,9 @@ require 'datadog/ddsketch/store/dense_store'
 require 'datadog/ddsketch/store/collapsing_lowest_dense_store'
 require 'datadog/ddsketch/store/collapsing_highest_dense_store'
 
+# protobuf
 require 'datadog/ddsketch/pb/ddsketch_pb'
+require 'datadog/ddsketch/proto'
 
 module Datadog
   module DDSketch

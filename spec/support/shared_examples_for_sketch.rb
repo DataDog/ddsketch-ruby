@@ -268,10 +268,10 @@ shared_examples 'sketch protobuf' do
     it "returns a Sketch protobuf" do
       protobuf = subject.to_proto
 
-      expect(protobuf).to be_a(::DDSketch)
-      expect(protobuf.mapping).to be_a(::IndexMapping)
-      expect(protobuf.positiveValues).to be_a(::Store)
-      expect(protobuf.negativeValues).to be_a(::Store)
+      expect(protobuf).to be_a(Datadog::DDSketch::Proto::DDSketch)
+      expect(protobuf.mapping).to be_a(Datadog::DDSketch::Proto::IndexMapping)
+      expect(protobuf.positiveValues).to be_a(Datadog::DDSketch::Proto::Store)
+      expect(protobuf.negativeValues).to be_a(Datadog::DDSketch::Proto::Store)
       expect(protobuf.zeroCount).to be_a(Float)
     end
   end

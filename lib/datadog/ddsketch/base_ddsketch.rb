@@ -132,7 +132,7 @@ module Datadog
       end
 
       def to_proto
-        ::DDSketch.new(
+        Proto::DDSketch.new(
           mapping: mapping.to_proto,
           positiveValues: @store.to_proto,
           negativeValues: @negative_store.to_proto,
