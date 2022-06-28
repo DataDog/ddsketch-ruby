@@ -3,9 +3,6 @@
 
 require 'google/protobuf'
 
-# !!! Manaully require this to customize Ruby class !!!
-require 'datadog/ddsketch/proto'
-
 Google::Protobuf::DescriptorPool.generated_pool.build do
   add_file("ddsketch.proto", :syntax => :proto3) do
     add_message "DDSketch" do
@@ -33,7 +30,6 @@ Google::Protobuf::DescriptorPool.generated_pool.build do
   end
 end
 
-# Define protobuf object within Datadog::DDSketch::Proto
 module Datadog
   module DDSketch
     module Proto
