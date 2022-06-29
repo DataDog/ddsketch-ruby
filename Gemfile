@@ -17,4 +17,8 @@ group :test do
   gem 'simplecov', require: false
 end
 
-gem 'google-protobuf'
+if RUBY_PLATFORM == 'java' || RUBY_VERSION >= '2.5.0'
+  gem 'google-protobuf', ['~> 3.0', '!= 3.7.0', '!= 3.7.1']
+else
+  gem 'google-protobuf', ['~> 3.0', '!= 3.7.0', '!= 3.7.1', '< 3.19.2']
+end
