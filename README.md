@@ -6,6 +6,30 @@ This repo contains the Ruby implementation of a distributed quantile sketch algo
 
 `DDSketch` has relative-error guarantees for any quantile q in [0, 1]. That is if the true value of the qth-quantile is `x` then `DDSketch` returns a value `y` such that `|x-y| / x < e` where `e` is the relative error parameter. `DDSketch` is also fully mergeable, meaning that multiple sketches from distributed systems can be combined in a central node.
 
+### Installation
+
+In order to support Ruby 2.1 and 2.2. We decided to make `google-protobuf` a soft dependency instead of a hard one in `gemspec`. If `google-protobuf` dependency is not resolved, user can still use it without [protobuf serialization](#protobuf-serialization)
+
+In `Gemfile`
+
+```ruby
+gem 'sketches-ruby'
+gem 'google-protobuf', '~> 3.0'
+```
+
+Verify in interactive console with `Datadog::DDSketch.supported?`
+
+```
+% irb -I lib
+irb(main):001:0> require 'google/protobuf'
+=> true
+irb(main):002:0> require 'ddsketch'
+=> true
+irb(main):003:0> Datadog::DDSketch.supported?
+=> true
+```
+
+
 ### Usage
 
 Our default implementation is guaranteed not to grow too large in size for any data that can be described by a distribution whose tails are sub-exponential. We also provide implementations where the q-quantile will be accurate up to the specified relative error for q that is not too small (or large). Concretely, the q-quantile will be accurate up to the specified relative error as long as it belongs to one of the bins kept by the sketch. For instance, If the values are time in seconds, `bin_limit = 2048` covers a time range from 80 microseconds to 1 year.
@@ -109,6 +133,7 @@ sketch_1.get_quantile_value(1)
 `#to_proto` would return Protobuf object
 
 ```ruby
+require 'google/protobuf'
 require 'datadog/ddsketch'
 
 sketch = Datadog::DDSketch::Sketch.new
