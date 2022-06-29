@@ -29,7 +29,6 @@ irb(main):003:0> Datadog::DDSketch.supported?
 => true
 ```
 
-
 ### Usage
 
 Our default implementation is guaranteed not to grow too large in size for any data that can be described by a distribution whose tails are sub-exponential. We also provide implementations where the q-quantile will be accurate up to the specified relative error for q that is not too small (or large). Concretely, the q-quantile will be accurate up to the specified relative error as long as it belongs to one of the bins kept by the sketch. For instance, If the values are time in seconds, `bin_limit = 2048` covers a time range from 80 microseconds to 1 year.
@@ -151,3 +150,5 @@ proto.to_h
 * Java implementation: [https://github.com/DataDog/sketches-java](https://github.com/DataDog/sketches-java)
 * Go implementation: [https://github.com/DataDog/sketches-go](https://github.com/DataDog/sketches-go)
 * Python implementation: [https://github.com/DataDog/sketches-py](https://github.com/DataDog/sketches-py)
+* Javascript implementation: [https://github.com/DataDog/sketches-js](https://github.com/DataDog/sketches-js)
+* .NET implementation: [https://github.com/DataDog/sketches-dotnet](https://github.com/DataDog/sketches-dotnet)
