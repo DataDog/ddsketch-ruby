@@ -9,12 +9,13 @@ group :test do
   # prime is required by distribution, as of Ruby 3.1, the prime gem is
   # no longer distributed as a part of the standard library and must be
   # bundled explicitly.
-  gem 'prime'
-  gem 'pry'
-  gem 'rake'
-  gem 'rspec'
-  gem 'rspec_junit_formatter'
-  gem 'rubocop', require: false
+  gem "prime"
+  gem "pry"
+  gem "rake"
+  gem "rspec"
+  gem "rspec_junit_formatter"
+  gem "rubocop", require: false
+  gem "standard" if RUBY_VERSION >= "2.2.0"
 end
 
 if RUBY_VERSION >= '2.5.0'
