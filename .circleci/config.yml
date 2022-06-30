@@ -167,29 +167,29 @@ orbs:
       #         keys:
       #           - bundle-{{ .Environment.CIRCLE_CACHE_VERSION }}-<<parameters.ruby_version>>-{{ checksum "lib/datadog/ddsketch/version.rb" }}-{{ .Branch }}-{{ checksum ".circleci/bundle_checksum" }}
       #     - *step_rubocop
-      # coverage:
-      #   <<: *test_job_default
-      #   steps:
-      #     - restore_cache:
-      #         keys:
-      #           - '{{ .Environment.CIRCLE_CACHE_VERSION }}-bundled-repo-<<parameters.ruby_version>>-{{ .Environment.CIRCLE_SHA1 }}'
-      #     - restore_cache:
-      #         keys:
-      #           - bundle-{{ .Environment.CIRCLE_CACHE_VERSION }}-<<parameters.ruby_version>>-{{ checksum "lib/datadog/ddsketch/version.rb" }}-{{ .Branch }}-{{ checksum ".circleci/bundle_checksum" }}
-      #     - attach_workspace:
-      #         at: /tmp/workspace
-      #     - run:
-      #         name: Install codecov
-      #         command: bundle add codecov
-      #     - run:
-      #         name: Generate coverage report artifact "coverage/index.html"
-      #         command: COVERAGE_DIR=/tmp/workspace/coverage bundle exec rake coverage:report
-      #     - run:
-      #         name: Generate coverage report artifact "coverage/versions/*/index.html"
-      #         command: COVERAGE_DIR=/tmp/workspace/coverage bundle exec rake coverage:report_per_ruby_version
-      #     - store_artifacts:
-      #         path: /tmp/workspace/coverage/report/
-      #         destination: coverage
+      coverage:
+        <<: *test_job_default
+        steps:
+          - restore_cache:
+              keys:
+                - '{{ .Environment.CIRCLE_CACHE_VERSION }}-bundled-repo-<<parameters.ruby_version>>-{{ .Environment.CIRCLE_SHA1 }}'
+          - restore_cache:
+              keys:
+                - bundle-{{ .Environment.CIRCLE_CACHE_VERSION }}-<<parameters.ruby_version>>-{{ checksum "lib/datadog/ddsketch/version.rb" }}-{{ .Branch }}-{{ checksum ".circleci/bundle_checksum" }}
+          - attach_workspace:
+              at: /tmp/workspace
+          - run:
+              name: Install codecov
+              command: bundle add codecov
+          - run:
+              name: Generate coverage report artifact "coverage/index.html"
+              command: COVERAGE_DIR=/tmp/workspace/coverage bundle exec rake coverage:report
+          - run:
+              name: Generate coverage report artifact "coverage/versions/*/index.html"
+              command: COVERAGE_DIR=/tmp/workspace/coverage bundle exec rake coverage:report_per_ruby_version
+          - store_artifacts:
+              path: /tmp/workspace/coverage/report/
+              destination: coverage
     executors:
       docker-integration:
         docker:
@@ -258,26 +258,21 @@ workflows:
       #     name: sorbet_type_checker
       #     requires:
       #       - build-2.6
-      # - orb/coverage:
-      #     <<: *config-2_7
-      #     name: coverage
-      #     requires:
-      #       - test-2.1
-      #       - test-2.2
-      #       - test-2.3
-      #       - test-2.4
-      #       - test-2.5
-      #       - test-2.6
-      #       - test-2.7
-      #       - test-3.0
-      #       - test-3.1
-      #       # TODO: Re-enable once 3.2 testing is green!
-      #       #- test-3.2
-      #       # ADD NEW RUBIES HERE
-      #       - test-jruby-9.2.8.0
-      #       - test-jruby-9.2-latest
-      #       - test-jruby-9.3-latest
-      #       # soon™️ - test-truffleruby-21.0.0
+      - orb/coverage:
+          <<: *config-2_7
+          name: coverage
+          requires:
+            - test-2.1
+            - test-2.2
+            - test-2.3
+            - test-2.4
+            - test-2.5
+            - test-2.6
+            - test-2.7
+            - test-3.0
+            - test-3.1
+            - test-jruby-9.2-latest
+            - test-jruby-9.3-latest
       # MRI
       - orb/build:
           <<: *config-2_1
