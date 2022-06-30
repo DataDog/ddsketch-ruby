@@ -30,6 +30,14 @@ module Datadog
           Math.ldexp(mantissa, exponent)
         end
 
+        def to_proto
+          Proto::IndexMapping.new(
+            gamma: @relative_accuracy,
+            indexOffset: @offset,
+            interpolation: Proto::IndexMapping::Interpolation::LINEAR
+          )
+        end
+
         protected
 
         def log_gamma(value)
