@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-shared_examples 'test sketch' do |args|
+shared_examples "test sketch" do |args|
   test_quantiles = [0, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.99, 0.999, 1].freeze
   test_sizes = [3, 5, 10, 100, 1000].freeze
 
-  describe '#add' do
+  describe "#add" do
     [
       UniformForward,
       UniformBackward,
@@ -60,7 +60,7 @@ shared_examples 'test sketch' do |args|
       end
     end
 
-    context 'when #add with weight' do
+    context "when #add with weight" do
       it do
         sketch = described_class.new(**args)
 
@@ -102,7 +102,7 @@ shared_examples 'test sketch' do |args|
         expect(sketch.avg).to be_within(1e-3).of(74.75)
       end
 
-      context 'when given weight is smaller or equal to zero' do
+      context "when given weight is smaller or equal to zero" do
         it do
           sketch = described_class.new(**args)
 
@@ -114,10 +114,10 @@ shared_examples 'test sketch' do |args|
     end
   end
 
-  describe '#merge' do
+  describe "#merge" do
     test_sizes.each do |size|
       context "when given size: #{size}" do
-        it 'test_merge_equal' do
+        it "test_merge_equal" do
           parameters = [[35, 1], [1, 3], [15, 2], [40, 0.5]]
           # for size in test_sizes:
           distribution = EmptyDataset.new(0)
@@ -145,7 +145,7 @@ shared_examples 'test sketch' do |args|
       end
     end
 
-    it 'test_merge_unequal' do
+    it "test_merge_unequal" do
       distribution = Lognormal.new
       sketch = described_class.new(**args)
       other = described_class.new(**args)
@@ -171,7 +171,7 @@ shared_examples 'test sketch' do |args|
       end
     end
 
-    it 'test_merge_mixed' do
+    it "test_merge_mixed" do
       distribution = EmptyDataset.new(0)
       sketch = described_class.new(**args)
 
@@ -200,7 +200,7 @@ shared_examples 'test sketch' do |args|
       end
     end
 
-    it 'test_consistent_merge' do
+    it "test_consistent_merge" do
       sketch1 = described_class.new(**args)
       sketch2 = described_class.new(**args)
 
@@ -249,21 +249,21 @@ shared_examples 'test sketch' do |args|
       expect(sketch2.num_values).to be_within(1e-3).of(sketch2_values[2])
     end
 
-    context 'when two sketch with different gamma' do
+    context "when two sketch with different gamma" do
       it do
         sketch = described_class.new(relative_accuracy: 0.1)
         other = described_class.new(relative_accuracy: 0.2)
 
         expect { sketch.merge(other) }.to raise_error(
           Datadog::DDSketch::InvalidSketchMergeError,
-          'Cannot merge two sketches with different relative accuracy'
+          "Cannot merge two sketches with different relative accuracy"
         )
       end
     end
   end
 end
 
-shared_examples 'sketch protobuf' do
+shared_examples "sketch protobuf" do
   describe "#to_proto" do
     it "returns a Sketch protobuf" do
       protobuf = subject.to_proto

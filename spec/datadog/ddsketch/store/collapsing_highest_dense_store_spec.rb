@@ -5,12 +5,11 @@ describe Datadog::DDSketch::Store::CollapsingHighestDenseStore do
   extreme_min = -extreme_max - 1
   bin_limits = [1, 20, 1000]
 
-  it_behaves_like 'store protobuf' do
+  it_behaves_like "store protobuf" do
     subject { described_class.new(bin_limit: 10) }
   end
 
-
-  describe '#add' do
+  describe "#add" do
     [
       Array.new(100, 0),
       (0...100).to_a,
@@ -47,7 +46,7 @@ describe Datadog::DDSketch::Store::CollapsingHighestDenseStore do
     end
   end
 
-  describe '#merge' do
+  describe "#merge" do
     [
       [[-10000], [10000]],
       [[10000], [-10000]],

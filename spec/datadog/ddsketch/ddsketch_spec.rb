@@ -1,55 +1,55 @@
 describe Datadog::DDSketch do
-  describe '::supported?' do
+  describe "::supported?" do
     subject(:supported?) { described_class.supported? }
 
-    context 'when there is an unsupported_reason' do
-      before { allow(described_class).to receive(:unsupported_reason).and_return('Unsupported, sorry :(') }
+    context "when there is an unsupported_reason" do
+      before { allow(described_class).to receive(:unsupported_reason).and_return("Unsupported, sorry :(") }
 
       it { is_expected.to be false }
     end
 
-    context 'when there is no unsupported_reason' do
+    context "when there is no unsupported_reason" do
       before { allow(described_class).to receive(:unsupported_reason).and_return(nil) }
 
       it { is_expected.to be true }
     end
   end
 
-  describe '::unsupported_reason' do
+  describe "::unsupported_reason" do
     subject(:unsupported_reason) { described_class.unsupported_reason }
 
     context "when the profiling native library is available and 'google-protobuf'" do
-      context 'is not available' do
-        include_context 'loaded gems', :'google-protobuf' => nil
+      context "is not available" do
+        include_context "loaded gems", {"google-protobuf" => nil}
 
         before do
-          hide_const('::Google::Protobuf')
+          hide_const("::Google::Protobuf")
         end
 
-        it { is_expected.to include 'Missing google-protobuf' }
+        it { is_expected.to include "Missing google-protobuf" }
       end
 
-      context 'is available but not yet loaded' do
+      context "is available but not yet loaded" do
         before do
-          hide_const('::Google::Protobuf')
+          hide_const("::Google::Protobuf")
         end
 
-        context 'but is below the minimum version' do
-          include_context 'loaded gems', :'google-protobuf' => Gem::Version.new('2.9')
+        context "but is below the minimum version" do
+          include_context "loaded gems", {"google-protobuf" => Gem::Version.new("2.9")}
 
-          it { is_expected.to include 'google-protobuf >= 3.0' }
+          it { is_expected.to include "google-protobuf >= 3.0" }
         end
 
-        context 'and meeting the minimum version' do
-          include_context 'loaded gems', :'google-protobuf' => Gem::Version.new('3.0')
+        context "and meeting the minimum version" do
+          include_context "loaded gems", {"google-protobuf" => Gem::Version.new("3.0")}
 
-          context 'when protobuf does not load correctly' do
+          context "when protobuf does not load correctly" do
             before { allow(described_class).to receive(:protobuf_loaded_successfully?).and_return(false) }
 
-            it { is_expected.to include 'error loading' }
+            it { is_expected.to include "error loading" }
           end
 
-          context 'when protobuf loads successfully' do
+          context "when protobuf loads successfully" do
             before { allow(described_class).to receive(:protobuf_loaded_successfully?).and_return(true) }
 
             it { is_expected.to be nil }
@@ -57,9 +57,9 @@ describe Datadog::DDSketch do
         end
       end
 
-      context 'is already loaded' do
+      context "is already loaded" do
         before do
-          stub_const('::Google::Protobuf', Module.new)
+          stub_const("::Google::Protobuf", Module.new)
           allow(described_class).to receive(:protobuf_loaded_successfully?).and_return(true)
         end
 
@@ -68,7 +68,7 @@ describe Datadog::DDSketch do
     end
   end
 
-  describe '::protobuf_loaded_successfully?' do
+  describe "::protobuf_loaded_successfully?" do
     subject(:protobuf_loaded_successfully?) { described_class.send(:protobuf_loaded_successfully?) }
 
     # NOTE: Be careful not to leave leftover state here, as marking protobuf as failed makes Profiling.supported?
@@ -87,19 +87,19 @@ describe Datadog::DDSketch do
       described_class.remove_instance_variable(:@protobuf_loaded)
     end
 
-    context 'when there is an issue requiring protobuf' do
-      before { allow(described_class).to receive(:require).and_raise(LoadError.new('Simulated require failure')) }
+    context "when there is an issue requiring protobuf" do
+      before { allow(described_class).to receive(:require).and_raise(LoadError.new("Simulated require failure")) }
 
       it { is_expected.to be false }
 
-      it 'logs a warning' do
+      it "logs a warning" do
         expect(Kernel).to receive(:warn).with(/Error while loading google-protobuf/)
 
         protobuf_loaded_successfully?
       end
     end
 
-    context 'when requiring protobuf is successful' do
+    context "when requiring protobuf is successful" do
       before { allow(described_class).to receive(:require).and_return(true) }
 
       it { is_expected.to be true }

@@ -1,10 +1,10 @@
-require_relative 'lib/datadog/ddsketch/version'
+require_relative "lib/datadog/ddsketch/version"
 
 Gem::Specification.new do |spec|
-  spec.name = 'sketches-ruby'
+  spec.name = "sketches-ruby"
   spec.version = Datadog::DDSketch::Version.to_s
-  spec.authors = ['Datadog, Inc.']
-  spec.email = ['dev@datadoghq.com']
+  spec.authors = ["Datadog, Inc."]
+  spec.email = ["dev@datadoghq.com"]
 
   spec.summary = "Ruby implementations of the distributed quantile sketch algorithm DDSketch."
   spec.description = "DDSketch is a fast-to-insert, fully mergeable, space-efficient quantile sketch with relative error guarantees."

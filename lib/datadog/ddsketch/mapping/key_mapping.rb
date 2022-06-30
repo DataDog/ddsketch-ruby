@@ -20,7 +20,7 @@ module Datadog
 
         def initialize(relative_accuracy:, offset: 0.0)
           if (relative_accuracy <= 0) || (relative_accuracy >= 1)
-            raise ArgumentError, 'Relative accuracy must be between 0 and 1.'
+            raise ArgumentError, "Relative accuracy must be between 0 and 1."
           end
 
           @relative_accuracy = relative_accuracy
@@ -44,9 +44,11 @@ module Datadog
 
         protected
 
-        def log_gamma(value) end
+        def log_gamma(value)
+        end
 
-        def pow_gamma(value) end
+        def pow_gamma(value)
+        end
       end
     end
   end

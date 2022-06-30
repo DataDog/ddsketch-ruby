@@ -9,7 +9,7 @@ module Datadog
       PRE = nil
 
       def self.to_s
-        [MAJOR, MINOR, PATCH, PRE].compact.join('.')
+        [MAJOR, MINOR, PATCH, PRE].compact.join(".")
       end
     end
   end
