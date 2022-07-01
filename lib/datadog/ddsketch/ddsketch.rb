@@ -28,13 +28,12 @@ module Datadog
     GOOGLE_PROTOBUF_MINIMUM_VERSION = Gem::Version.new("3.0")
     private_constant :GOOGLE_PROTOBUF_MINIMUM_VERSION
 
-    def self.supported?
-      unsupported_reason.nil?
+    def self.protobuf_gem_loaded_successfully?
+      protobuf_gem_loading_issue.nil?
     end
 
-    def self.unsupported_reason
-      # NOTE: Only the first matching reason is returned, so try to keep a nice order on reasons -- e.g. tell users
-      # first that they can't use this on JRuby before telling them that they are missing protobuf
+    def self.protobuf_gem_loading_issue
+      # NOTE: Only the first matching reason is returned, so try to keep a nice order on reasons
       protobuf_gem_unavailable? ||
         protobuf_version_unsupported? ||
         protobuf_failed_to_load?
@@ -60,7 +59,7 @@ module Datadog
     end
 
     private_class_method def self.protobuf_failed_to_load?
-      unless protobuf_loaded_successfully?
+      unless protobuf_required_successfully?
         "There was an error loading the google-protobuf library; see previous warning message for details"
       end
     end
@@ -74,7 +73,7 @@ module Datadog
     #
     # Thus, the gem can still be installed, but can be in a broken state. To avoid breaking customer applications, we
     # use this helper to load it and gracefully handle failures.
-    private_class_method def self.protobuf_loaded_successfully?
+    private_class_method def self.protobuf_required_successfully?
       return @protobuf_loaded if defined?(@protobuf_loaded)
 
       begin
@@ -96,7 +95,7 @@ module Datadog
     end
 
     private_class_method def self.load_ddsketch
-      return false unless supported?
+      return unless protobuf_gem_loaded_successfully?
 
       require "datadog/ddsketch/pb/ddsketch_pb"
 
