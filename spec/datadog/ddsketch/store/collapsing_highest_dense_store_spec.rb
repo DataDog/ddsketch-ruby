@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-describe Datadog::DDSketch::Store::CollapsingHighestDenseStore do
+RSpec.describe Datadog::DDSketch::Store::CollapsingHighestDenseStore do
   extreme_max = 9223372036854775807
   extreme_min = -extreme_max - 1
   bin_limits = [1, 20, 1000]

@@ -1,3 +1,5 @@
+# Copy and Paste from dd-trace-rb, https://github.com/datadog/dd-trace-rb/tree/master/.circleci
+
 version: 2.1
 
 # Common variables, containers, jobs and steps.
@@ -17,22 +19,16 @@ test_containers:
       image:
         description: Docker image location
         type: string
-      resource_class_to_use:
-        description: Resource class to use
-        type: string
-        default: medium
       edge:
         description: Use latest version of dependencies during testing
         type: boolean
         default: false
-    resource_class: <<parameters.resource_class_to_use>>
   - &container_base_environment
     BUNDLE_GEMFILE: /app/Gemfile
     JRUBY_OPTS: --dev # Faster JVM startup: https://github.com/jruby/jruby/wiki/Improving-startup-time#use-the---dev-flag
     # Override number of concurrent compiles in grpc gem, see https://github.com/grpc/grpc/pull/28250 and https://github.com/DataDog/dd-trace-rb/issues/1791
     # If you see gem installation failing with "Killed" on CircleCI and `gem install --platform ruby grpc` reproduces the
     # issue when you connect to the testing container via ssh, then try lowering this file a notch.
-    GRPC_RUBY_BUILD_PROCS: 6
   - &container_parameters_environment
     - *container_base_environment
     - COVERAGE_BASE_DIR: coverage
@@ -113,7 +109,6 @@ orbs:
     jobs:
       build:
         <<: *test_job_default
-        resource_class: <<parameters.resource_class_to_use>>
         steps:
           - checkout
           - restore_cache:
@@ -236,16 +231,18 @@ job_configuration:
     <<: *filters_all_branches_and_tags
     ruby_version: '3.1'
     image: ivoanjo/docker-library:ddtrace_rb_3_1_1
+  - &config-3_2
+    <<: *filters_all_branches_and_tags
+    ruby_version: '3.2'
+    image: ivoanjo/docker-library:ddtrace_rb_3_2_0_preview1
   - &config-jruby-9_2-latest # More recent release of 9.2
     <<: *filters_all_branches_and_tags
     ruby_version: 'jruby-9.2-latest'
     image: ivoanjo/docker-library:ddtrace_rb_jruby_9_2_18_0
-    resource_class_to_use: medium+
   - &config-jruby-9_3-latest
     <<: *filters_all_branches_and_tags
     ruby_version: 'jruby-9.3-latest'
     image: ivoanjo/docker-library:ddtrace_rb_jruby_9_3_4_0
-    resource_class_to_use: medium+
 
 workflows:
   version: 2
@@ -349,6 +346,14 @@ workflows:
           name: test-3.1
           requires:
             - build-3.1
+      - orb/build:
+          <<: *config-3_2
+          name: build-3.2
+      - orb/test:
+          <<: *config-3_2
+          name: test-3.2
+          requires:
+            - build-3.2
       - orb/build:
           <<: *config-jruby-9_2-latest
           name: build-jruby-9.2-latest

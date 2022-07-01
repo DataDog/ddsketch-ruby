@@ -1,4 +1,4 @@
-describe Datadog::DDSketch do
+RSpec.describe Datadog::DDSketch do
   describe "::supported?" do
     subject(:supported?) { described_class.supported? }
 
