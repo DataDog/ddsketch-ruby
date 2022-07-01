@@ -79,7 +79,10 @@ step_bundle_install: &step_bundle_install
       else
         echo "All required gems were found in cache."
       fi
-
+step_rubocop: &step_rubocop
+  run:
+    name: Delint with Rubocop
+    command: bundle exec rake rubocop
 step_compute_bundle_checksum: &step_compute_bundle_checksum
   run:
     name: Compute bundle checksum
@@ -157,16 +160,16 @@ orbs:
               root: .
               paths:
                 - coverage
-      # lint:
-      #   <<: *test_job_default
-      #   steps:
-      #     - restore_cache:
-      #         keys:
-      #           - '{{ .Environment.CIRCLE_CACHE_VERSION }}-bundled-repo-<<parameters.ruby_version>>-{{ .Environment.CIRCLE_SHA1 }}'
-      #     - restore_cache:
-      #         keys:
-      #           - bundle-{{ .Environment.CIRCLE_CACHE_VERSION }}-<<parameters.ruby_version>>-{{ checksum "lib/datadog/ddsketch/version.rb" }}-{{ .Branch }}-{{ checksum ".circleci/bundle_checksum" }}
-      #     - *step_rubocop
+      lint:
+        <<: *test_job_default
+        steps:
+          - restore_cache:
+              keys:
+                - '{{ .Environment.CIRCLE_CACHE_VERSION }}-bundled-repo-<<parameters.ruby_version>>-{{ .Environment.CIRCLE_SHA1 }}'
+          - restore_cache:
+              keys:
+                - bundle-{{ .Environment.CIRCLE_CACHE_VERSION }}-<<parameters.ruby_version>>-{{ checksum "lib/datadog/ddsketch/version.rb" }}-{{ .Branch }}-{{ checksum ".circleci/bundle_checksum" }}
+          - *step_rubocop
       coverage:
         <<: *test_job_default
         steps:
@@ -248,11 +251,11 @@ workflows:
   version: 2
   build-and-test:
     jobs:
-      # - orb/lint:
-      #     <<: *config-2_6
-      #     name: lint
-      #     requires:
-      #       - build-2.6
+      - orb/lint:
+          <<: *config-2_7
+          name: lint
+          requires:
+            - build-2.7
       # - orb/sorbet_type_checker:
       #     <<: *config-2_6
       #     name: sorbet_type_checker

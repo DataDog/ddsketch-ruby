@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 describe Datadog::DDSketch::Store::DenseStore do
-  it_behaves_like 'store protobuf'
+  it_behaves_like "store protobuf"
 
-  describe '#add' do
+  describe "#add" do
     [
       Array.new(100, 0),
       (0...100).to_a,
@@ -28,7 +28,7 @@ describe Datadog::DDSketch::Store::DenseStore do
     end
   end
 
-  describe '#merge' do
+  describe "#merge" do
     [
       [[-10000], [10000]],
       [[10000], [-10000]],
@@ -58,7 +58,7 @@ describe Datadog::DDSketch::Store::DenseStore do
     end
   end
 
-  describe '#key_at_rank' do
+  describe "#key_at_rank" do
     it do
       store = described_class.new
 

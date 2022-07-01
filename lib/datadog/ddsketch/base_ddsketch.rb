@@ -63,7 +63,7 @@ module Datadog
 
       # Add a value to the sketch.
       def add(val, weight = 1.0)
-        raise ArgumentError, 'weight must be positive' if weight <= 0.0
+        raise ArgumentError, "weight must be positive" if weight <= 0.0
 
         if val > @mapping.min_possible
           @store.add(@mapping.key(val), weight)
@@ -104,7 +104,7 @@ module Datadog
       # encodes the values that were added to both this and the input sketch.
       def merge(sketch)
         unless mergeable?(sketch)
-          raise InvalidSketchMergeError, 'Cannot merge two sketches with different relative accuracy'
+          raise InvalidSketchMergeError, "Cannot merge two sketches with different relative accuracy"
         end
 
         return if sketch.count == 0

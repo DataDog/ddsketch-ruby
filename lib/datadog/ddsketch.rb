@@ -1,3 +1,3 @@
 # frozen_string_literal: true
 
-require 'datadog/ddsketch/ddsketch'
+require "datadog/ddsketch/ddsketch"

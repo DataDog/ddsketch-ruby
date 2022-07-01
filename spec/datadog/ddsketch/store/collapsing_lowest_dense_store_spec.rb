@@ -5,11 +5,11 @@ describe Datadog::DDSketch::Store::CollapsingLowestDenseStore do
   extreme_min = -extreme_max - 1
   bin_limits = [1, 20, 1000]
 
-  it_behaves_like 'store protobuf' do
+  it_behaves_like "store protobuf" do
     subject { described_class.new(bin_limit: 10) }
   end
 
-  describe '#add' do
+  describe "#add" do
     [
       Array.new(100, 0),
       (0...100).to_a,
@@ -46,7 +46,7 @@ describe Datadog::DDSketch::Store::CollapsingLowestDenseStore do
     end
   end
 
-  describe '#merge' do
+  describe "#merge" do
     merging_values_list = [
       [[-10000], [10000]],
       [[10000], [-10000]],
@@ -93,8 +93,8 @@ describe Datadog::DDSketch::Store::CollapsingLowestDenseStore do
     end
   end
 
-  describe '#copy' do
-    it 'Test copying empty stores' do
+  describe "#copy" do
+    it "Test copying empty stores" do
       store = described_class.new(bin_limit: 10)
 
       store.copy(described_class.new(bin_limit: 10))
@@ -102,7 +102,7 @@ describe Datadog::DDSketch::Store::CollapsingLowestDenseStore do
       expect(store.count).to eq(0)
     end
 
-    it 'Test copying stores' do
+    it "Test copying stores" do
       store = described_class.new(bin_limit: 10)
       new_store = described_class.new(bin_limit: 10)
 

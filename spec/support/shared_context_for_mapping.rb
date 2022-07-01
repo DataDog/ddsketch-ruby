@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-shared_context 'mapping tests' do
+shared_context "mapping tests" do
   def relative_error(expected_min, expected_max, actual)
     # raise if (expected_min < 0) || (expected_max < 0) || (actual < 0)
     # if (expected_min <= actual) && (actual <= expected_max)
@@ -35,8 +35,8 @@ shared_context 'mapping tests' do
       relative_error(
         mapping.max_possible,
         mapping.max_possible,
-        mapping.value(mapping.key(mapping.max_possible)),
-      ),
+        mapping.value(mapping.key(mapping.max_possible))
+      )
     ].max
   end
 
@@ -54,7 +54,7 @@ shared_context 'mapping tests' do
         context "with accuracy #{relative_accuracy}" do
           let(:relative_accuracy) { relative_accuracy }
 
-          it 'test accuracy' do
+          it "test accuracy" do
             max_rel_acc = test_value_rel_acc(mapping)
             expect(max_rel_acc).to be < mapping.relative_accuracy
           end
@@ -71,15 +71,15 @@ shared_context 'mapping tests' do
       context "with offset #{offset}" do
         let(:offset) { offset }
 
-        it 'test offset' do
+        it "test offset" do
           expect(mapping.key(1)).to eq(Integer(offset))
         end
       end
     end
   end
 
-  describe '#initialize' do
-    context 'when given relative_accuracy larger than 1' do
+  describe "#initialize" do
+    context "when given relative_accuracy larger than 1" do
       it do
         expect do
           described_class.new(relative_accuracy: 1.1)
@@ -87,7 +87,7 @@ shared_context 'mapping tests' do
       end
     end
 
-    context 'when given relative_accuracy smaller than zero' do
+    context "when given relative_accuracy smaller than zero" do
       it do
         expect do
           described_class.new(relative_accuracy: -0.1)

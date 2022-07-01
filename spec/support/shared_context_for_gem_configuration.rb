@@ -1,4 +1,4 @@
-shared_context 'loaded gems' do |gems = {}|
+shared_context "loaded gems" do |gems = {}|
   before do
     allow(Gem.loaded_specs).to receive(:[]).and_call_original
 
