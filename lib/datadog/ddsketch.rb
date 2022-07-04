@@ -4,7 +4,7 @@ require "datadog/ddsketch/version"
 require "datadog/ddsketch/errors"
 
 # sketchs
-require "datadog/ddsketch/base_ddsketch"
+require "datadog/ddsketch/base_sketch"
 require "datadog/ddsketch/sketch"
 require "datadog/ddsketch/log_collapsing_lowest_dense_sketch"
 require "datadog/ddsketch/log_collapsing_highest_dense_sketch"
