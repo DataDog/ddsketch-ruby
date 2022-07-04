@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-describe Datadog::DDSketch::Store::DenseStore do
+RSpec.describe Datadog::DDSketch::Store::DenseStore do
   it_behaves_like "store protobuf"
 
   describe "#add" do

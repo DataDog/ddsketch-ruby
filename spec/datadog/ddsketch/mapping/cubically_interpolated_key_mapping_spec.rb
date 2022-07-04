@@ -1,4 +1,4 @@
-describe Datadog::DDSketch::Mapping::CubicallyInterpolatedKeyMapping do
+RSpec.describe Datadog::DDSketch::Mapping::CubicallyInterpolatedKeyMapping do
   it_behaves_like "mapping protobuf", :CUBIC do
     subject { described_class.new(relative_accuracy: 0.01) }
   end

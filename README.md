@@ -8,25 +8,10 @@ This repo contains the Ruby implementation of a distributed quantile sketch algo
 
 ### Installation
 
-In order to support Ruby 2.1 and 2.2. We decided to make `google-protobuf` a soft dependency instead of a hard one in `gemspec`. If `google-protobuf` dependency is not resolved, user can still use it without [protobuf serialization](#protobuf-serialization)
-
 In `Gemfile`
 
 ```ruby
 gem 'sketches-ruby'
-gem 'google-protobuf', '~> 3.0'
-```
-
-Verify in interactive console with `Datadog::DDSketch.supported?`
-
-```
-% irb -I lib
-irb(main):001:0> require 'google/protobuf'
-=> true
-irb(main):002:0> require 'ddsketch'
-=> true
-irb(main):003:0> Datadog::DDSketch.supported?
-=> true
 ```
 
 ### Usage
@@ -37,7 +22,7 @@ Our default implementation is guaranteed not to grow too large in size for any d
 To initialize a sketch with the default parameters (relative_accuracy is 0.01 and bin_limit is 2048)
 
 ```ruby
-require 'datadog/ddsketch'
+require 'ddsketch'
 
 Datadog::DDSketch::Sketch.new
 // or
@@ -55,7 +40,7 @@ Whereas other histograms use _rank error_ guarantees (i.e. retrieving the p99 of
 This property makes `DDSketch` especially useful for long-tailed distributions of data, like measurements of latency.
 
 ```ruby
-require 'datadog/ddsketch'
+require 'ddsketch'
 
 Datadog::DDSketch::Sketch.new(relative_accuracy: relative_accuracy)
 
@@ -75,7 +60,7 @@ Datadog::DDSketch::LogCollapsingLowestDenseSketch.new(
 To add a number to a sketch, call `sketch.add(value)`. Both positive and negative numbers are supported.
 
 ```ruby
-require 'datadog/ddsketch'
+require 'ddsketch'
 
 sketch = Datadog::DDSketch::Sketch.new
 
@@ -89,7 +74,7 @@ sketch.add(-3.1415)
 To retrieve measurements from a sketch, use `sketch.get_quantile_value(quantile)`. Any number between 0 and 1 (inclusive) can be used as a quantile. Additionally, common summary statistics are available such as `sketch.min`, `sketch.max`, `sketch.sum`, and `sketch.count`:
 
 ```ruby
-require 'datadog/ddsketch'
+require 'ddsketch'
 
 sketch = Datadog::DDSketch::Sketch.new
 
@@ -113,7 +98,7 @@ sketch.sum     // 1607374722.8585
 Independent sketches can be merged together, provided that they were initialized with the same `relative_accuracy`. This allows collecting and transmitting measurements in a distributed manner, and merging their results together while preserving the `relative_accuracy` guarantee.
 
 ```ruby
-require 'datadog/ddsketch'
+require 'ddsketch'
 
 sketch_1 = Datadog::DDSketch::Sketch.new
 sketch_2 = Datadog::DDSketch::Sketch.new
@@ -129,11 +114,32 @@ sketch_1.get_quantile_value(1)
 
 ### Protobuf Serialization
 
-`#to_proto` would return Protobuf object
+Support for serialization into protobuf is optional, and relies on the `google-protobuf` gem being installed separately. Here's how to do it:
+
+In `Gemfile`
 
 ```ruby
-require 'google/protobuf'
-require 'datadog/ddsketch'
+gem 'sketches-ruby'
+gem 'google-protobuf', '~> 3.0'
+```
+In `bin/console`, verify with `Datadog::DDSketch.protobuf_gem_loaded_successfully?`
+
+```
+// When loaded successfully
+irb(main):001:0> Datadog::DDSketch.protobuf_gem_loaded_successfully?
+=> true
+
+// `false`
+irb(main):001:0> Datadog::DDSketch.protobuf_gem_loaded_successfully?
+=> false
+irb(main):002:0> Datadog::DDSketch.protobuf_gem_loading_issue
+=> "Missing google-protobuf dependency; please add `gem 'google-protobuf', '~> 3.0'` to your Gemfile or gems.rb file"
+```
+
+`#to_proto` returns Protobuf object
+
+```ruby
+require 'ddsketch'
 
 sketch = Datadog::DDSketch::Sketch.new
 

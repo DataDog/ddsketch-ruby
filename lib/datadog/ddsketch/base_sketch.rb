@@ -33,7 +33,7 @@ module Datadog
     # <a href="https://github.com/DataDog/sketches-py/">Python</a>
     # <a href="https://github.com/DataDog/sketches-js/">JavaScript</a>
 
-    class BaseDDSketch
+    class BaseSketch
       DEFAULT_REL_ACC = 0.01 # "alpha" in the paper
       DEFAULT_BIN_LIMIT = 2048
 
