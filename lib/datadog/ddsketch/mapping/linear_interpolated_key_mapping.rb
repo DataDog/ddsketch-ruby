@@ -8,6 +8,29 @@ module Datadog
       # base 2 from the binary representations of floating-point values and
       # linearly interpolating the logarithm in-between.
       class LinearlyInterpolatedKeyMapping < KeyMapping
+        #
+        # Serialize into protobuf
+        #
+        # @return [Proto::IndexMapping] with LINEAR interpolation
+        #
+        def to_proto
+          Proto::IndexMapping.new(
+            gamma: @relative_accuracy,
+            indexOffset: @offset,
+            interpolation: Proto::IndexMapping::Interpolation::LINEAR
+          )
+        end
+
+        protected
+
+        def log_gamma(value)
+          _log2_approx(value) * @multiplier
+        end
+
+        def pow_gamma(value)
+          _exp2_approx(value / @multiplier)
+        end
+
         # Approximates log2 by s + f
         # where v = (s+1) * 2 ** f  for s in [0, 1)
 
@@ -28,24 +51,6 @@ module Datadog
           # JRuby has inconsistent result with `Math.ldexp`
           # https://github.com/jruby/jruby/issues/7234
           Math.ldexp(mantissa, exponent)
-        end
-
-        def to_proto
-          Proto::IndexMapping.new(
-            gamma: @relative_accuracy,
-            indexOffset: @offset,
-            interpolation: Proto::IndexMapping::Interpolation::LINEAR
-          )
-        end
-
-        protected
-
-        def log_gamma(value)
-          _log2_approx(value) * @multiplier
-        end
-
-        def pow_gamma(value)
-          _exp2_approx(value / @multiplier)
         end
       end
     end

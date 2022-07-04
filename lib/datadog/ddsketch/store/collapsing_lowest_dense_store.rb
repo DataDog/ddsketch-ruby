@@ -7,8 +7,14 @@ module Datadog
       # bin for the max_key, but collapsing the left-most bins if the number of bins
       # exceeds the bin_limit
       class CollapsingLowestDenseStore < DenseStore
-        attr_accessor :bin_limit, :is_collapsed
+        # @return [Integer] the maximum number of bins
+        attr_reader :bin_limit
 
+        # @return [Boolean] whether the store has been collapsed
+        attr_reader :is_collapsed
+
+        # @param [Integer] bin_limit the maximum number of bins
+        # @param [Integer] chunk_size the number of bins to grow by
         def initialize(bin_limit:, chunk_size: CHUNK_SIZE)
           super(chunk_size: chunk_size)
 
@@ -16,12 +22,56 @@ module Datadog
           @is_collapsed = false
         end
 
+        # Copies the input store into the current store
+        #
+        # @param [Store::CollapsingLowestDenseStore] store the store to be copied
+        #
+        # @return [void]
         def copy(store)
           super(store)
 
           self.bin_limit = store.bin_limit
           self.is_collapsed = store.is_collapsed
         end
+
+        # Merge another store into the current store.
+        #   collapsing the left-most bins if the number of bins
+        #   exceeds the bin_limit
+        #
+        # @param [Store::CollapsingLowestDenseStore] store
+        #   the store to be merged
+        #
+        # @return [void]
+        def merge(store)
+          return if store.count == 0
+
+          if count == 0
+            copy(store)
+            return
+          end
+
+          extend_range(store.min_key, store.max_key) if store.min_key < min_key || store.max_key > max_key
+
+          collapse_start_idx = store.min_key - store.offset
+          collapse_end_idx = [min_key, store.max_key + 1].min - store.offset
+
+          if collapse_end_idx > collapse_start_idx
+            collapse_count = store.bins[collapse_start_idx...collapse_end_idx].inject(:+) || 0
+            bins[0] += collapse_count
+          else
+            collapse_end_idx = collapse_start_idx
+          end
+
+          (collapse_end_idx + store.offset).upto(store.max_key).each do |key|
+            bins[key - offset] += store.bins[key - store.offset]
+          end
+
+          self.count += store.count
+        end
+
+        private
+
+        attr_writer :bin_limit, :is_collapsed
 
         def get_new_length(new_min_key, new_max_key)
           desired_length = new_max_key - new_min_key + 1
@@ -84,33 +134,6 @@ module Datadog
             self.min_key = new_min_key
             self.max_key = new_max_key
           end
-        end
-
-        def merge(store)
-          return if store.count == 0
-
-          if count == 0
-            copy(store)
-            return
-          end
-
-          extend_range(store.min_key, store.max_key) if store.min_key < min_key || store.max_key > max_key
-
-          collapse_start_idx = store.min_key - store.offset
-          collapse_end_idx = [min_key, store.max_key + 1].min - store.offset
-
-          if collapse_end_idx > collapse_start_idx
-            collapse_count = store.bins[collapse_start_idx...collapse_end_idx].inject(:+) || 0
-            bins[0] += collapse_count
-          else
-            collapse_end_idx = collapse_start_idx
-          end
-
-          (collapse_end_idx + store.offset).upto(store.max_key).each do |key|
-            bins[key - offset] += store.bins[key - store.offset]
-          end
-
-          self.count += store.count
         end
       end
     end

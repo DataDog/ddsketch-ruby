@@ -24,16 +24,18 @@ require "datadog/ddsketch/store/collapsing_highest_dense_store"
 require "datadog/ddsketch/proto"
 
 module Datadog
+  # Namespace for DDSketch library
   module DDSketch
     GOOGLE_PROTOBUF_MINIMUM_VERSION = Gem::Version.new("3.0")
     private_constant :GOOGLE_PROTOBUF_MINIMUM_VERSION
 
+    # @return [Boolean] if `google-protobuf` is loaded sucessfully
     def self.protobuf_gem_loaded_successfully?
       protobuf_gem_loading_issue.nil?
     end
 
+    # @return [String, nil] the description about failing to load `google-protobuf`
     def self.protobuf_gem_loading_issue
-      # NOTE: Only the first matching reason is returned, so try to keep a nice order on reasons
       protobuf_gem_unavailable? ||
         protobuf_version_unsupported? ||
         protobuf_failed_to_load?

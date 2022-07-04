@@ -3,17 +3,36 @@
 module Datadog
   module DDSketch
     module Store
+      #
       # Stores map integers to counters. They can be seen as a collection of bins.
       # We start with 128 bins and grow the store in chunks of 128 unless specified
       # otherwise.
-
+      #
       # A dense store that keeps all the bins between the bin for the min_key and the
       # bin for the max_key.
+      #
       class DenseStore
         CHUNK_SIZE = 128
 
-        attr_accessor :count, :min_key, :max_key, :chunk_size, :offset, :bins
+        # @return [Integer] the sum of the counts for the bins
+        attr_reader :count
 
+        # @return [Integer] the minimum key bin
+        attr_reader :min_key
+
+        # @return [Integer] the maximum key bin
+        attr_reader :max_key
+
+        # @return [Integer] the number of bins to grow by
+        attr_reader :chunk_size
+
+        # @return [Integer] the difference btw the keys and the index in which they are stored
+        attr_reader :offset
+
+        # @return [Array<Float>] the bins
+        attr_reader :bins
+
+        # @param [Integer] chunk_size the number of bins to grow by
         def initialize(chunk_size: CHUNK_SIZE)
           @count = 0
           @min_key = Float::INFINITY
@@ -24,13 +43,13 @@ module Datadog
           @bins = []
         end
 
-        def to_proto
-          Proto::Store.new(
-            contiguousBinCounts: @bins,
-            contiguousBinIndexOffset: @offset
-          )
-        end
-
+        #
+        # Copies the input store into the current store
+        #
+        # @param [Store::DenseStore] store the store to be copied
+        #
+        # @return [void]
+        #
         def copy(store)
           self.bins = store.bins.dup
           self.count = store.count
@@ -39,15 +58,92 @@ module Datadog
           self.offset = store.offset
         end
 
+        #
+        # Merge another store into the current store. This should be equivalent as running the
+        #   add operations that have been run on the other store on this one.
+        #
+        # @param [Store::DenseStore] store
+        #   the store to be merged
+        #
+        # @return [void]
+        #
+        def merge(store)
+          return if store.count == 0
+
+          if count == 0
+            copy(store)
+            return
+          end
+
+          extend_range(store.min_key, store.max_key) if store.min_key < min_key || store.max_key > max_key
+
+          store.min_key.upto(store.max_key).each do |key|
+            bins[key - offset] += store.bins[key - store.offset]
+          end
+
+          self.count += store.count
+        end
+
+        #
+        # Return the number of bins
+        #
+        # @return [Integer] the number of bins
+        #
         def length
           bins.length
         end
 
+        #
+        # Updates the counter at the specified index key, growing the number of bins if necessary.
+        #
+        # @param [Float] key
+        # @param [Float] weight
+        #
+        # @return [void]
+        #
         def add(key, weight = 1.0)
           idx = get_index(key)
           bins[idx] += weight
           self.count += weight
         end
+
+        #
+        # Return the key for the value at a given rank
+        #
+        # @param [Float] rank
+        # @param [Boolean] lower
+        #
+        # @return [Integer]
+        #
+        def key_at_rank(rank, lower = true)
+          running_ct = 0.0
+
+          bins.each_with_index do |bin_ct, i|
+            running_ct += bin_ct
+
+            ## ??
+            return i + offset if (lower && running_ct > rank) || (!lower && running_ct >= rank + 1)
+          end
+
+          # Never here....??
+          max_key
+        end
+
+        #
+        # Serialize into protobuf
+        #
+        # @return [Proto::Store]
+        #
+        def to_proto
+          Proto::Store.new(
+            contiguousBinCounts: @bins,
+            contiguousBinIndexOffset: @offset
+          )
+        end
+
+        private
+
+        attr_writer :count, :min_key, :max_key, :chunk_size, :offset, :bins
 
         # Calculate the bin index for the key, extending the range if necessary.
         def get_index(key)
@@ -113,37 +209,6 @@ module Datadog
           middle_key = new_min_key + (new_max_key - new_min_key + 1).div(2)
 
           shift_bins(offset + length.div(2) - middle_key)
-        end
-
-        def key_at_rank(rank, lower = true)
-          running_ct = 0.0
-
-          bins.each_with_index do |bin_ct, i|
-            running_ct += bin_ct
-
-            ## ??
-            return i + offset if (lower && running_ct > rank) || (!lower && running_ct >= rank + 1)
-          end
-
-          # Never here....??
-          max_key
-        end
-
-        def merge(store)
-          return if store.count == 0
-
-          if count == 0
-            copy(store)
-            return
-          end
-
-          extend_range(store.min_key, store.max_key) if store.min_key < min_key || store.max_key > max_key
-
-          store.min_key.upto(store.max_key).each do |key|
-            bins[key - offset] += store.bins[key - store.offset]
-          end
-
-          self.count += store.count
         end
       end
     end
