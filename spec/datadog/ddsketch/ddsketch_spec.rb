@@ -15,7 +15,7 @@ RSpec.describe Datadog::DDSketch do
     end
   end
 
-  describe "::unsupported_reason" do
+  describe "::protobuf_gem_loading_issue" do
     subject { described_class.protobuf_gem_loading_issue }
 
     context "when 'google-protobuf' is not available" do
@@ -70,6 +70,8 @@ RSpec.describe Datadog::DDSketch do
     subject { described_class.send(:protobuf_required_successfully?) }
 
     before do
+      # NOTE: Be careful not to leave leftover state here
+      #
       # Remove any previous state
       if described_class.instance_variable_defined?(:@protobuf_loaded)
         described_class.remove_instance_variable(:@protobuf_loaded)

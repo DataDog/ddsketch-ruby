@@ -114,7 +114,7 @@ sketch_1.get_quantile_value(1)
 
 ### Protobuf Serialization
 
-In order to support Ruby 2.1 and 2.2. We decided to make `google-protobuf` a soft dependency instead of a hard one in `gemspec`.
+Support for serialization into protobuf is optional, and relies on the `google-protobuf` gem being installed separately. Here's how to do it:
 
 In `Gemfile`
 
