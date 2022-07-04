@@ -1,0 +1,4 @@
+--title "sketches-ruby x.y.z documentation"
+--markup markdown
+--markup-provider redcarpet
+--files LICENSE
