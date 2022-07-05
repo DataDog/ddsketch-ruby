@@ -141,9 +141,11 @@ module Datadog
           )
         end
 
-        private
+        protected
 
         attr_writer :count, :min_key, :max_key, :chunk_size, :offset, :bins
+
+        private
 
         # Calculate the bin index for the key, extending the range if necessary.
         def get_index(key)

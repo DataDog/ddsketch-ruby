@@ -69,9 +69,11 @@ module Datadog
           self.count += store.count
         end
 
-        private
+        protected
 
         attr_writer :bin_limit, :is_collapsed
+
+        private
 
         def get_new_length(new_min_key, new_max_key)
           desired_length = new_max_key - new_min_key + 1
