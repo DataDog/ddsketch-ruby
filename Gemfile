@@ -36,4 +36,4 @@ else
 end
 
 gem "yard"
-gem "redcarpet"
+gem "redcarpet" if RUBY_PLATFORM != "java"
