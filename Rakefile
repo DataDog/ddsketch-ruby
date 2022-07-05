@@ -2,6 +2,7 @@
 
 require "bundler/gem_tasks"
 require "rspec/core/rake_task"
+require "yard"
 
 RSpec::Core::RakeTask.new(:spec)
 
@@ -43,4 +44,26 @@ namespace :coverage do
       end
     end
   end
+end
+
+YARD::Rake::YardocTask.new(:docs) do |t|
+  # Options defined in `.yardopts` are read first, then merged with
+  # options defined here.
+  #
+  # It's recommended to define options in `.yardopts` instead of here,
+  # as `.yardopts` can be read by external YARD tools, like the
+  # hot-reload YARD server `yard server --reload`.
+
+  t.options += ["--title", "sketches-ruby #{Datadog::DDSketch::Version} documentation"]
+end
+
+# Deploy tasks
+S3_BUCKET = "gems.datadoghq.com"
+S3_DIR = ENV["S3_DIR"]
+
+desc "release the docs website"
+task "release:docs": :docs do
+  raise "Missing environment variable S3_DIR" if !S3_DIR || S3_DIR.empty?
+
+  sh "aws s3 cp --recursive doc/ s3://#{S3_BUCKET}/#{S3_DIR}/docs/"
 end

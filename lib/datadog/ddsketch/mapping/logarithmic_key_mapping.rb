@@ -7,14 +7,17 @@ module Datadog
       # requires the least number of keys to cover a given range of values. This is
       # done by logarithmically mapping floating-point values to integers.
       class LogarithmicKeyMapping < KeyMapping
-        def initialize(
-          relative_accuracy:,
-          offset: 0.0
-        )
+        # (see KeyMapping#initialize)
+        def initialize(relative_accuracy:, offset: 0.0)
           super(relative_accuracy: relative_accuracy, offset: offset)
           @multiplier *= Math.log(2)
         end
 
+        #
+        # Serialize into protobuf
+        #
+        # @return [Proto::IndexMapping] with NONE interpolation
+        #
         def to_proto
           Proto::IndexMapping.new(
             gamma: @relative_accuracy,
