@@ -25,9 +25,9 @@ To initialize a sketch with the default parameters (relative_accuracy is 0.01 an
 require 'ddsketch'
 
 DDSketch::Sketch.new
-// or
+# or
 DDSketch::LogCollapsingHighestDenseSketch.new
-// or
+# or
 DDSketch::LogCollapsingLowestDenseSketch.new
 ```
 
@@ -82,15 +82,15 @@ sketch.add(1607374726)
 sketch.add(0)
 sketch.add(-3.1415)
 
-sketch.get_quantile_value(0)     // -3.158156063689099
-sketch.get_quantile_value(0.5)   // 0
-sketch.get_quantile_value(0.99)  // 0
-sketch.get_quantile_value(1)     // 1595824509.0872598
+sketch.get_quantile_value(0)     # -3.158156063689099
+sketch.get_quantile_value(0.5)   # 0
+sketch.get_quantile_value(0.99)  # 0
+sketch.get_quantile_value(1)     # 1595824509.0872598
 
-sketch.min     // -3.1415
-sketch.max     // 1607374726
-sketch.count   // 3.0
-sketch.sum     // 1607374722.8585
+sketch.min     # -3.1415
+sketch.max     # 1607374726
+sketch.count   # 3.0
+sketch.sum     # 1607374722.8585
 ```
 
 ### Merging sketches
@@ -106,7 +106,7 @@ sketch_2 = DDSketch::Sketch.new
 [1,2,3,4,5].each { |v| sketch_1.add(v) }
 [6,7,8,9,10].each { |v| sketch_2.add(v) }
 
-// sketch_2 is merged into sketch_1, without modifying sketch_2
+# sketch_2 is merged into sketch_1, without modifying sketch_2
 sketch_1.merge(sketch_2)
 
 sketch_1.get_quantile_value(1)

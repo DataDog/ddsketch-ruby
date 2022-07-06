@@ -23,7 +23,6 @@ RSpec.describe DDSketch::Proto do
     context "when given a store" do
       it do
         store = double(bins: [], offset: 0)
-
         protobuf = described_class.serialize_store(store)
 
         expect(protobuf).to be_a(DDSketch::Proto::Store)
