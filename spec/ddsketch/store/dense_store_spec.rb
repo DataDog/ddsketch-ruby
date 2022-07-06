@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 RSpec.describe DDSketch::Store::DenseStore do
-  it_behaves_like "store protobuf"
-
   describe "#add" do
     [
       Array.new(100, 0),

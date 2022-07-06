@@ -12,19 +12,6 @@ module DDSketch
         @multiplier *= Math.log(2)
       end
 
-      #
-      # Serialize into protobuf
-      #
-      # @return [Proto::IndexMapping] with NONE interpolation
-      #
-      def to_proto
-        Proto::IndexMapping.new(
-          gamma: @relative_accuracy,
-          indexOffset: @offset,
-          interpolation: Proto::IndexMapping::Interpolation::NONE
-        )
-      end
-
       protected
 
       def log_gamma(value)

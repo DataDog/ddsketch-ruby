@@ -8,16 +8,12 @@ module DDSketch
     # linearly interpolating the logarithm in-between.
     class LinearlyInterpolatedKeyMapping < KeyMapping
       #
-      # Serialize into protobuf
+      # Indicates linear interpolating algorithm
       #
-      # @return [Proto::IndexMapping] with LINEAR interpolation
+      # @return [nil]
       #
-      def to_proto
-        Proto::IndexMapping.new(
-          gamma: @relative_accuracy,
-          indexOffset: @offset,
-          interpolation: Proto::IndexMapping::Interpolation::LINEAR
-        )
+      def self.interpolation
+        :linear
       end
 
       protected

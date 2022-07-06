@@ -11,24 +11,20 @@ module DDSketch
       B = -3.0 / 5.0
       C = 10.0 / 7.0
 
+      #
+      # Indicates cubically interpolating algorithm
+      #
+      # @return [Symbol]
+      #
+      def self.interpolation
+        :cubic
+      end
+
       # (see KeyMapping#initialize)
       def initialize(relative_accuracy:, offset: 0.0)
         super(relative_accuracy: relative_accuracy, offset: offset)
 
         @multiplier /= C
-      end
-
-      #
-      # Serialize into protobuf
-      #
-      # @return [Proto::IndexMapping] with CUBIC interpolation
-      #
-      def to_proto
-        Proto::IndexMapping.new(
-          gamma: @relative_accuracy,
-          indexOffset: @offset,
-          interpolation: Proto::IndexMapping::Interpolation::CUBIC
-        )
       end
 
       protected

@@ -5,10 +5,6 @@ RSpec.describe DDSketch::Store::CollapsingHighestDenseStore do
   extreme_min = -extreme_max - 1
   bin_limits = [1, 20, 1000]
 
-  it_behaves_like "store protobuf" do
-    subject { described_class.new(bin_limit: 10) }
-  end
-
   describe "#add" do
     [
       Array.new(100, 0),

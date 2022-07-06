@@ -175,18 +175,6 @@ module DDSketch
       @count
     end
 
-    # Serialize into protobuf
-    #
-    # @return [Proto::DDSketch]
-    def to_proto
-      Proto::DDSketch.new(
-        mapping: mapping.to_proto,
-        positiveValues: @store.to_proto,
-        negativeValues: @negative_store.to_proto,
-        zeroCount: @zero_count
-      )
-    end
-
     private
 
     # Two sketches can be merged only if their gammas are equal.

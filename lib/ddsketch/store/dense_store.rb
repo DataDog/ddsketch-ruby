@@ -134,18 +134,6 @@ module DDSketch
         max_key
       end
 
-      #
-      # Serialize into protobuf
-      #
-      # @return [Proto::Store]
-      #
-      def to_proto
-        Proto::Store.new(
-          contiguousBinCounts: @bins,
-          contiguousBinIndexOffset: @offset
-        )
-      end
-
       protected
 
       attr_writer :count, :min_key, :max_key, :chunk_size, :offset, :bins

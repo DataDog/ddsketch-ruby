@@ -1,8 +1,4 @@
 RSpec.describe DDSketch::Mapping::LinearlyInterpolatedKeyMapping do
-  it_behaves_like "mapping protobuf", :LINEAR do
-    subject { described_class.new(relative_accuracy: 0.01) }
-  end
-
   describe do
     before { skip "Skipping `Math.ldexp` is inconsistent between JRuby & MRI" if RUBY_PLATFORM == "java" }
 

@@ -29,6 +29,18 @@ module DDSketch
       # @return [Float] the largest value the sketch can handle
       attr_reader :max_possible
 
+      # @return [Float] value used to shift all bin keys
+      attr_reader :offset
+
+      #
+      # Indicates interpolating algorithm
+      #
+      # @return [Symbol, nil]
+      #
+      def self.interpolation
+        nil
+      end
+
       # @param [Float] relative_accuracy the relative accuaracy guaranteed, must between 0 ~ 1
       # @param [Float] offset value used to shift all bin keys
       def initialize(relative_accuracy:, offset: 0.0)
@@ -67,6 +79,15 @@ module DDSketch
       #
       def value(key)
         pow_gamma(key - @offset) * (2.0 / (1 + @gamma))
+      end
+
+      #
+      # Indicates interpolating algorithm
+      #
+      # @return [Symbol, nil]
+      #
+      def interpolation
+        self.class.interpolation
       end
 
       protected

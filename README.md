@@ -112,44 +112,6 @@ sketch_1.merge(sketch_2)
 sketch_1.get_quantile_value(1)
 ```
 
-### Protobuf Serialization
-
-Support for serialization into protobuf is optional, and relies on the `google-protobuf` gem being installed separately. Here's how to do it:
-
-In `Gemfile`
-
-```ruby
-gem 'sketches-ruby'
-gem 'google-protobuf', '~> 3.0'
-```
-In `bin/console`, verify with `DDSketch.protobuf_gem_loaded_successfully?`
-
-```
-// When loaded successfully
-irb(main):001:0> DDSketch.protobuf_gem_loaded_successfully?
-=> true
-
-// `false`
-irb(main):001:0> DDSketch.protobuf_gem_loaded_successfully?
-=> false
-irb(main):002:0> DDSketch.protobuf_gem_loading_issue
-=> "Missing google-protobuf dependency; please add `gem 'google-protobuf', '~> 3.0'` to your Gemfile or gems.rb file"
-```
-
-`#to_proto` returns Protobuf object
-
-```ruby
-require 'ddsketch'
-
-sketch = DDSketch::Sketch.new
-
-proto = sketch.to_proto
-=> <DDSketch::Proto::DDSketch: mapping: <DDSketch::Proto::IndexMapping: gamma: 0.01, indexOffset: 0.0, interpolation: :NONE>, positiveValues: <DDSketch::Proto::Store: binCounts: {}, contiguousBinCounts: [], contiguousBinIndexOffset: 0>, negativeValues: <DDSketch::Proto::Store: binCounts: {}, contiguousBinCounts: [], contiguousBinIndexOffset: 0>, zeroCount: 0.0>
-
-proto.to_h
-=> {:mapping=>{:gamma=>0.01, :indexOffset=>0.0, :interpolation=>:NONE}, :positiveValues=>{:binCounts=>{}, :contiguousBinCounts=>[], :contiguousBinIndexOffset=>0}, :negativeValues=>{:binCounts=>{}, :contiguousBinCounts=>[], :contiguousBinIndexOffset=>0}, :zeroCount=>0.0}
-```
-
 ## References
 
 * [DDSketch: A Fast and Fully-Mergeable Quantile Sketch with Relative-Error Guarantees](http://www.vldb.org/pvldb/vol12/p2195-masson.pdf). Charles Masson, Jee E. Rim and Homin K. Lee. 2019.
