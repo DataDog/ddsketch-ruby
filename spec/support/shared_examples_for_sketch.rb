@@ -255,24 +255,10 @@ shared_examples "test sketch" do |args|
         other = described_class.new(relative_accuracy: 0.2)
 
         expect { sketch.merge(other) }.to raise_error(
-          Datadog::DDSketch::InvalidSketchMergeError,
+          DDSketch::InvalidSketchMergeError,
           "Cannot merge two sketches with different relative accuracy"
         )
       end
-    end
-  end
-end
-
-shared_examples "sketch protobuf" do
-  describe "#to_proto" do
-    it "returns a Sketch protobuf" do
-      protobuf = subject.to_proto
-
-      expect(protobuf).to be_a(Datadog::DDSketch::Proto::DDSketch)
-      expect(protobuf.mapping).to be_a(Datadog::DDSketch::Proto::IndexMapping)
-      expect(protobuf.positiveValues).to be_a(Datadog::DDSketch::Proto::Store)
-      expect(protobuf.negativeValues).to be_a(Datadog::DDSketch::Proto::Store)
-      expect(protobuf.zeroCount).to be_a(Float)
     end
   end
 end

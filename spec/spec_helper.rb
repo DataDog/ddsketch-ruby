@@ -27,7 +27,7 @@ end
 require "pry"
 Dir["./spec/support/**/*.rb"].sort.each { |f| require f }
 
-require "datadog/ddsketch"
+require "ddsketch"
 
 RSpec.configure do |config|
   # rspec-expectations config goes here. You can use an alternate
