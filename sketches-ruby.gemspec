@@ -1,8 +1,8 @@
-require_relative "lib/datadog/ddsketch/version"
+require_relative "lib/ddsketch/version"
 
 Gem::Specification.new do |spec|
   spec.name = "sketches-ruby"
-  spec.version = Datadog::DDSketch::Version.to_s
+  spec.version = DDSketch::Version.to_s
   spec.authors = ["Datadog, Inc."]
   spec.email = ["dev@datadoghq.com"]
 

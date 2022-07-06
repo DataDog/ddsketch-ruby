@@ -54,7 +54,7 @@ YARD::Rake::YardocTask.new(:docs) do |t|
   # as `.yardopts` can be read by external YARD tools, like the
   # hot-reload YARD server `yard server --reload`.
 
-  t.options += ["--title", "sketches-ruby #{Datadog::DDSketch::Version} documentation"]
+  t.options += ["--title", "sketches-ruby #{DDSketch::Version} documentation"]
 end
 
 # Deploy tasks

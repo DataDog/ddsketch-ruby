@@ -24,11 +24,11 @@ To initialize a sketch with the default parameters (relative_accuracy is 0.01 an
 ```ruby
 require 'ddsketch'
 
-Datadog::DDSketch::Sketch.new
+DDSketch::Sketch.new
 // or
-Datadog::DDSketch::LogCollapsingHighestDenseSketch.new
+DDSketch::LogCollapsingHighestDenseSketch.new
 // or
-Datadog::DDSketch::LogCollapsingLowestDenseSketch.new
+DDSketch::LogCollapsingLowestDenseSketch.new
 ```
 
 ### Initialize with `relative_accuracy` or `bin_limit`
@@ -42,14 +42,14 @@ This property makes `DDSketch` especially useful for long-tailed distributions o
 ```ruby
 require 'ddsketch'
 
-Datadog::DDSketch::Sketch.new(relative_accuracy: relative_accuracy)
+DDSketch::Sketch.new(relative_accuracy: relative_accuracy)
 
-Datadog::DDSketch::LogCollapsingHighestDenseSketch.new(
+DDSketch::LogCollapsingHighestDenseSketch.new(
   relative_accuracy: relative_accuracy,    # default is 0.01
   bin_limit: bin_limit                     # default is 2048
 )
 
-Datadog::DDSketch::LogCollapsingLowestDenseSketch.new(
+DDSketch::LogCollapsingLowestDenseSketch.new(
   relative_accuracy: relative_accuracy,    # default is 0.01
   bin_limit: bin_limit                     # default is 2048
 )
@@ -62,7 +62,7 @@ To add a number to a sketch, call `sketch.add(value)`. Both positive and negativ
 ```ruby
 require 'ddsketch'
 
-sketch = Datadog::DDSketch::Sketch.new
+sketch = DDSketch::Sketch.new
 
 sketch.add(1607374726)
 sketch.add(0)
@@ -76,7 +76,7 @@ To retrieve measurements from a sketch, use `sketch.get_quantile_value(quantile)
 ```ruby
 require 'ddsketch'
 
-sketch = Datadog::DDSketch::Sketch.new
+sketch = DDSketch::Sketch.new
 
 sketch.add(1607374726)
 sketch.add(0)
@@ -100,8 +100,8 @@ Independent sketches can be merged together, provided that they were initialized
 ```ruby
 require 'ddsketch'
 
-sketch_1 = Datadog::DDSketch::Sketch.new
-sketch_2 = Datadog::DDSketch::Sketch.new
+sketch_1 = DDSketch::Sketch.new
+sketch_2 = DDSketch::Sketch.new
 
 [1,2,3,4,5].each { |v| sketch_1.add(v) }
 [6,7,8,9,10].each { |v| sketch_2.add(v) }
@@ -122,17 +122,17 @@ In `Gemfile`
 gem 'sketches-ruby'
 gem 'google-protobuf', '~> 3.0'
 ```
-In `bin/console`, verify with `Datadog::DDSketch.protobuf_gem_loaded_successfully?`
+In `bin/console`, verify with `DDSketch.protobuf_gem_loaded_successfully?`
 
 ```
 // When loaded successfully
-irb(main):001:0> Datadog::DDSketch.protobuf_gem_loaded_successfully?
+irb(main):001:0> DDSketch.protobuf_gem_loaded_successfully?
 => true
 
 // `false`
-irb(main):001:0> Datadog::DDSketch.protobuf_gem_loaded_successfully?
+irb(main):001:0> DDSketch.protobuf_gem_loaded_successfully?
 => false
-irb(main):002:0> Datadog::DDSketch.protobuf_gem_loading_issue
+irb(main):002:0> DDSketch.protobuf_gem_loading_issue
 => "Missing google-protobuf dependency; please add `gem 'google-protobuf', '~> 3.0'` to your Gemfile or gems.rb file"
 ```
 
@@ -141,10 +141,10 @@ irb(main):002:0> Datadog::DDSketch.protobuf_gem_loading_issue
 ```ruby
 require 'ddsketch'
 
-sketch = Datadog::DDSketch::Sketch.new
+sketch = DDSketch::Sketch.new
 
 proto = sketch.to_proto
-=> <Datadog::DDSketch::Proto::DDSketch: mapping: <Datadog::DDSketch::Proto::IndexMapping: gamma: 0.01, indexOffset: 0.0, interpolation: :NONE>, positiveValues: <Datadog::DDSketch::Proto::Store: binCounts: {}, contiguousBinCounts: [], contiguousBinIndexOffset: 0>, negativeValues: <Datadog::DDSketch::Proto::Store: binCounts: {}, contiguousBinCounts: [], contiguousBinIndexOffset: 0>, zeroCount: 0.0>
+=> <DDSketch::Proto::DDSketch: mapping: <DDSketch::Proto::IndexMapping: gamma: 0.01, indexOffset: 0.0, interpolation: :NONE>, positiveValues: <DDSketch::Proto::Store: binCounts: {}, contiguousBinCounts: [], contiguousBinIndexOffset: 0>, negativeValues: <DDSketch::Proto::Store: binCounts: {}, contiguousBinCounts: [], contiguousBinIndexOffset: 0>, zeroCount: 0.0>
 
 proto.to_h
 => {:mapping=>{:gamma=>0.01, :indexOffset=>0.0, :interpolation=>:NONE}, :positiveValues=>{:binCounts=>{}, :contiguousBinCounts=>[], :contiguousBinIndexOffset=>0}, :negativeValues=>{:binCounts=>{}, :contiguousBinCounts=>[], :contiguousBinIndexOffset=>0}, :zeroCount=>0.0}
