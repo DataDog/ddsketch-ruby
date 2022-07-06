@@ -28,7 +28,7 @@ RSpec.describe DDSketch::Proto do
 
         expect(protobuf).to be_a(DDSketch::Proto::Store)
         expect(protobuf.contiguousBinCounts).to be_a(Google::Protobuf::RepeatedField)
-        expect(protobuf.contiguousBinIndexOffset).to be_a(Fixnum)
+        expect(protobuf.contiguousBinIndexOffset).to eq(0)
       end
     end
   end

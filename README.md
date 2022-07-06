@@ -1,6 +1,6 @@
-# sketches-ruby
+# ddsketch-ruby
 
-[![CircleCI](https://circleci.com/gh/DataDog/sketches-ruby/tree/main.svg?style=svg)](https://circleci.com/gh/DataDog/sketches-ruby/tree/main)
+[![CircleCI](https://circleci.com/gh/DataDog/ddsketch-ruby/tree/main.svg?style=svg)](https://circleci.com/gh/DataDog/ddsketch-ruby/tree/main)
 
 This repo contains the Ruby implementation of a distributed quantile sketch algorithm [DDSketch](http://www.vldb.org/pvldb/vol12/p2195-masson.pdf).
 
@@ -11,7 +11,7 @@ This repo contains the Ruby implementation of a distributed quantile sketch algo
 In `Gemfile`
 
 ```ruby
-gem 'sketches-ruby'
+gem 'ddsketch'
 ```
 
 ### Usage

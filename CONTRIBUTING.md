@@ -1,4 +1,4 @@
-# Contributing to sketches-ruby
+# Contributing to ddsketch-ruby
 
 First of all, thanks for contributing!
 
