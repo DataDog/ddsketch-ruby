@@ -25,12 +25,14 @@ module DDSketch
       #
       # @param [Store::CollapsingHighestDenseStore] store the store to be copied
       #
-      # @return [void]
+      # @return [nil]
       def copy(store)
         super(store)
 
         self.bin_limit = store.bin_limit
         self.is_collapsed = store.is_collapsed
+
+        nil
       end
 
       # Merge another store into the current store.
@@ -40,7 +42,7 @@ module DDSketch
       # @param [Store::CollapsingHighestDenseStore] store
       #   the store to be merged
       #
-      # @return [void]
+      # @return [nil]
       def merge(store)
         return if store.count == 0
 
@@ -65,6 +67,8 @@ module DDSketch
         end
 
         self.count += store.count
+
+        nil
       end
 
       protected

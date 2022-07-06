@@ -92,7 +92,7 @@ module DDSketch
     # @param [Float] val The value to be added.
     # @param [Float] weight Must be positive.
     #
-    # @return [void]
+    # @return [nil]
     def add(val, weight = 1.0)
       raise ArgumentError, "weight must be positive" if weight <= 0.0
 
@@ -109,6 +109,8 @@ module DDSketch
       @sum += val * weight
       @min = val if val < @min
       @max = val if val > @max
+
+      nil
     end
 
     # Return the approximate value at the specified quantile.
@@ -140,7 +142,7 @@ module DDSketch
     #
     # @param [BaseSketch] sketch The sketch to be merged.
     #
-    # @return [void]
+    # @return [nil]
     def merge(sketch)
       unless mergeable?(sketch)
         raise InvalidSketchMergeError, "Cannot merge two sketches with different relative accuracy"
@@ -164,6 +166,8 @@ module DDSketch
       @min = sketch.min if sketch.min < @min
 
       @max = sketch.max if sketch.max > @max
+
+      nil
     end
 
     # @return [Float] the count of values in the sketch

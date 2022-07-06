@@ -47,7 +47,7 @@ module DDSketch
       #
       # @param [Store::DenseStore] store the store to be copied
       #
-      # @return [void]
+      # @return [nil]
       #
       def copy(store)
         self.bins = store.bins.dup
@@ -55,6 +55,8 @@ module DDSketch
         self.min_key = store.min_key
         self.max_key = store.max_key
         self.offset = store.offset
+
+        nil
       end
 
       #
@@ -64,7 +66,7 @@ module DDSketch
       # @param [Store::DenseStore] store
       #   the store to be merged
       #
-      # @return [void]
+      # @return [nil]
       #
       def merge(store)
         return if store.count == 0
@@ -81,6 +83,8 @@ module DDSketch
         end
 
         self.count += store.count
+
+        nil
       end
 
       #
@@ -98,12 +102,14 @@ module DDSketch
       # @param [Float] key
       # @param [Float] weight
       #
-      # @return [void]
+      # @return [nil]
       #
       def add(key, weight = 1.0)
         idx = get_index(key)
         bins[idx] += weight
         self.count += weight
+
+        nil
       end
 
       #
