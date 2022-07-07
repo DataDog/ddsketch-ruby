@@ -67,3 +67,11 @@ task "release:docs": :docs do
 
   sh "aws s3 cp --recursive doc/ s3://#{S3_BUCKET}/#{S3_DIR}/docs/"
 end
+
+namespace :changelog do
+  task :format do
+    require "pimpmychangelog"
+
+    PimpMyChangelog::CLI.run!
+  end
+end

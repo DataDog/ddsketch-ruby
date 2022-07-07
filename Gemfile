@@ -37,3 +37,5 @@ end
 
 gem "yard"
 gem "redcarpet" if RUBY_PLATFORM != "java"
+
+gem "pimpmychangelog", ">= 0.1.2"
