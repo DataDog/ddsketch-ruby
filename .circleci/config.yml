@@ -85,6 +85,10 @@ step_compute_bundle_checksum: &step_compute_bundle_checksum
     command: |
       bundle lock # Create Gemfile.lock
       cat Gemfile Gemfile.lock gemfiles/*.gemfile.lock | md5sum > .circleci/bundle_checksum
+step_release_docs: &step_release_docs
+  run:
+    name: Upload release docs
+    command: S3_DIR=ddsketch bundle exec rake release:docs
 step_run_all_tests: &step_run_all_tests
   run:
     name: Run tests
@@ -95,11 +99,16 @@ step_run_all_tests: &step_run_all_tests
         --out='/tmp/rspec/-<%= ARGV.join.gsub('/', '-') %>.xml'
         " > .rspec-local # Configure RSpec metadata exporter
         bundle exec rspec
-
 filters_all_branches_and_tags: &filters_all_branches_and_tags
   filters:
     tags:
       only: /.*/
+filters_only_release_tags: &filters_only_release_tags
+  filters:
+    branches:
+      ignore: /.*/
+    tags:
+      only: /^v\d+(\.\d+){0,3}(\.(alpha|beta|rc)\d+)?$/
 
 orbs:
   orb:
@@ -261,6 +270,30 @@ job_configuration:
     ruby_version: 'jruby-9.3-latest'
     image: ivoanjo/docker-library:ddtrace_rb_jruby_9_3_4_0
 
+jobs:
+  "deploy release":
+    <<: *job_defaults
+    docker:
+      - environment:
+          *container_base_environment
+        image: ivoanjo/docker-library:ddtrace_rb_2_7_3
+    resource_class: small
+    steps:
+      - checkout
+      - run:
+          name: Install AWS CLI
+          command: |
+            apt-get -y -qq update
+            apt-get -y -qq install awscli
+      - *step_bundle_install
+      - *step_release_docs
+      # - run:
+      #     name: Upload release Gem and rebuild index
+      #     command: S3_DIR=release bundle exec rake release:gem
+      # - store_artifacts:
+      #     path: pkg/
+      #     destination: gem
+
 workflows:
   version: 2
   build-and-test:
@@ -395,3 +428,19 @@ workflows:
           name: test-jruby-9.3-latest
           requires:
             - build-jruby-9.3-latest
+      - "deploy release":
+          <<: *filters_all_branches_and_tags
+          requires:
+            - lint
+            - test-2.1
+            - test-2.2
+            - test-2.3
+            - test-2.4
+            - test-2.5
+            - test-2.6
+            - test-2.7
+            - test-3.0
+            - test-3.1
+            - test-3.2
+            - test-jruby-9.2-latest
+            - test-jruby-9.3-latest
